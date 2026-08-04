@@ -43,12 +43,10 @@ class SensorChart(Card):
         self.chart = QChart()
 
         self.chart.legend().setVisible(True)
+        self.chart.legend().setAlignment(Qt.AlignBottom)
 
         self.chart.setMargins(QMargins(10, 10, 10, 10))
 
-        self.chart.setAnimationOptions(QChart.NoAnimation)
-
-        # Background
         self.chart.setBackgroundVisible(True)
         self.chart.setBackgroundBrush(QBrush(QColor("#2D2D30")))
 
@@ -57,7 +55,15 @@ class SensorChart(Card):
             QBrush(QColor("#2D2D30"))
         )
 
-        self.chart.legend().setBackgroundVisible(False)
+        self.chart.setAnimationOptions(QChart.NoAnimation)
+
+        # Legend Style
+        legend = self.chart.legend()
+
+        legend.setVisible(True)
+        legend.setAlignment(Qt.AlignBottom)
+        legend.setLabelBrush(QBrush(QColor("#FFFFFF")))
+        legend.setBackgroundVisible(False)
 
         # ============================================
         # Axis X
@@ -162,8 +168,13 @@ class SensorChart(Card):
             )
 
             series = QLineSeries()
+
             series.setName(sensor["title"])
-            series.setColor(QColor(color))
+
+            pen = QPen(QColor(color))
+            pen.setWidth(3)
+
+            series.setPen(pen)
 
             self.chart.addSeries(series)
 
