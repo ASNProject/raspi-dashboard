@@ -140,7 +140,7 @@ class Sidebar(QWidget):
 
             button.setIconSize(QSize(18, 18))
 
-            button.setObjectName("SidebarButton")
+            button.setObjectName("PrimaryButton")
 
             self.menuGroup.addButton(button)
 
