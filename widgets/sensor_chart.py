@@ -42,7 +42,10 @@ class SensorChart(Card):
 
         self.chart = QChart()
 
-        self.chart.legend().setVisible(True)
+        self.chart.legend().hide()
+        legend = self.chart.legend()
+
+        print("Legend markers :", len(legend.markers()))
 
         self.chart.setMargins(QMargins(10, 10, 10, 10))
 
@@ -108,6 +111,17 @@ class SensorChart(Card):
         # ============================================
 
         self.create_series()
+        legend = self.chart.legend()
+
+        legend.show()
+
+        legend.setAlignment(Qt.AlignBottom)
+
+        legend.setBackgroundVisible(False)
+
+        legend.setLabelBrush(
+            QBrush(QColor("#FFFFFF"))
+        )
 
         # ============================================
         # Chart View
@@ -153,7 +167,6 @@ class SensorChart(Card):
         ]
 
         for index, sensor in enumerate(sensors):
-
             key = sensor["key"]
 
             color = sensor.get(
@@ -162,15 +175,38 @@ class SensorChart(Card):
             )
 
             series = QLineSeries()
+
             series.setName(sensor["title"])
+
+            pen = QPen(QColor(color))
+            pen.setWidth(3)
+
+            series.setPen(pen)
 
             self.chart.addSeries(series)
 
+            self.series[key] = series
+            self.buffers[key] = deque(maxlen=self.MAX_POINTS)
+
+        #
+        # Baru attach axis setelah semua series dibuat
+        #
+
+        for series in self.series.values():
             series.attachAxis(self.axisX)
             series.attachAxis(self.axisY)
 
-            self.series[key] = series
-            self.buffers[key] = deque(maxlen=self.MAX_POINTS)
+        #
+        # Refresh legend
+        #
+
+        legend = self.chart.legend()
+
+        legend.setVisible(False)
+        legend.setVisible(True)
+        legend.setAlignment(Qt.AlignBottom)
+        legend.setBackgroundVisible(False)
+        legend.setLabelBrush(QBrush(QColor("white")))
 
     # =====================================================
     # Update Data
