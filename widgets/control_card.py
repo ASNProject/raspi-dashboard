@@ -56,6 +56,7 @@ class ControlCard(Card):
         # ==========================================
 
         self.button = QPushButton()
+        self.button.setObjectName("ToolbarButton")
 
         self.button.setMinimumHeight(40)
 

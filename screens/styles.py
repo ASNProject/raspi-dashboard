@@ -262,4 +262,11 @@ QPushButton#ToolbarButton:hover{
 QPushButton#ToolbarButton:pressed{
     background:#20242C;
 }
+/* ==========================================================
+   DASHBOARD CONTENT
+========================================================== */
+
+QWidget#DashboardContent{
+    background: #1E1E1E;
+}
 """

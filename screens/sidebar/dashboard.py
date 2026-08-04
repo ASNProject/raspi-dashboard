@@ -76,6 +76,7 @@ class Dashboard(QWidget):
         scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         scrollWidget = QWidget()
+        scrollWidget.setObjectName("DashboardContent")
 
         scrollWidget.setSizePolicy(
             QSizePolicy.Expanding,
