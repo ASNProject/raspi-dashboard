@@ -83,7 +83,7 @@ class Dashboard(QWidget):
         )
 
         contentLayout = QVBoxLayout(scrollWidget)
-        contentLayout.setContentsMargins(0, 0, 0, 0)
+        contentLayout.setContentsMargins(8, 8, 8, 8)
         contentLayout.setSpacing(20)
         contentLayout.setAlignment(Qt.AlignTop)
 
