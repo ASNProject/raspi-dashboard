@@ -90,7 +90,7 @@ class SystemPanel(Card):
         ]
 
         for button in buttons:
-
+            button.setObjectName("PrimaryButton")
             button.setMinimumHeight(buttonHeight)
 
     # ==========================================================
