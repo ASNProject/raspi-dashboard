@@ -240,4 +240,26 @@ QLabel#CardTitle{
     padding-bottom:8px;
 
 }
+
+/* ==========================================================
+   TOOLBAR BUTTON
+========================================================== */
+
+QPushButton#ToolbarButton{
+    background:#2F3542;
+    border:1px solid #404654;
+    border-radius:8px;
+    color:white;
+    padding:8px;
+    font-size:13px;
+    font-weight:bold;
+}
+
+QPushButton#ToolbarButton:hover{
+    background:#3A4252;
+}
+
+QPushButton#ToolbarButton:pressed{
+    background:#20242C;
+}
 """
