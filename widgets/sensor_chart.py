@@ -41,11 +41,23 @@ class SensorChart(Card):
         # ============================================
 
         self.chart = QChart()
+
         self.chart.legend().setVisible(True)
-        self.chart.setBackgroundVisible(False)
-        self.chart.setPlotAreaBackgroundVisible(False)
-        self.chart.setMargins(QMargins(0, 0, 0, 0))
+
+        self.chart.setMargins(QMargins(10, 10, 10, 10))
+
         self.chart.setAnimationOptions(QChart.NoAnimation)
+
+        # Background
+        self.chart.setBackgroundVisible(True)
+        self.chart.setBackgroundBrush(QBrush(QColor("#2D2D30")))
+
+        self.chart.setPlotAreaBackgroundVisible(True)
+        self.chart.setPlotAreaBackgroundBrush(
+            QBrush(QColor("#2D2D30"))
+        )
+
+        self.chart.legend().setBackgroundVisible(False)
 
         # ============================================
         # Axis X
@@ -102,8 +114,17 @@ class SensorChart(Card):
         # ============================================
 
         self.chartView = QChartView(self.chart)
+
         self.chartView.setRenderHint(QPainter.Antialiasing)
+
         self.chartView.setMinimumHeight(320)
+
+        self.chartView.setStyleSheet("""
+        QChartView{
+            background:#2D2D30;
+            border:none;
+        }
+        """)
 
         self.layout.addWidget(self.chartView)
 
