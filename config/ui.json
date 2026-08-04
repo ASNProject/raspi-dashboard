@@ -1,0 +1,18 @@
+{
+    "buttons": {
+        "connect": "Connect ESP32",
+        "disconnect": "Disconnect",
+        "camera": "Start Camera"
+    },
+
+    "status": {
+        "online": "ONLINE",
+        "offline": "OFFLINE"
+    },
+
+    "title": {
+        "dashboard": "Dashboard",
+        "sensor": "Sensor",
+        "camera": "Camera"
+    }
+}

@@ -1,0 +1,17 @@
+{
+  "appName": "Panzer Robotics Dashboard",
+  "windowTitle": "Panzer Robotics Dashboard",
+  "windowWidth": 400,
+  "windowHeight": 800,
+  "theme": "dark",
+  "sidebarName": "Panzer Robotics",
+  "sidebarSubtitle": "IoT Dashboard for Raspberry Pi 5",
+  "sidebarLogo": "assets/panzer.png",
+  "connectionNameLabel": "ESP32 Connection",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "port": "Port",
+  "selectPort": "Select Port",
+  "baudRate": "Baudrate",
+  "connectButton": "Connect"
+}

@@ -1,0 +1,5 @@
+{
+    "defaultPort": "",
+    "baudrate": 115200,
+    "timeout": 1
+}

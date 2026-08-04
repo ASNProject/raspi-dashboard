@@ -1,0 +1,28 @@
+{
+  "cards": [
+    {
+      "key": "lamp",
+      "title": "Lampu",
+      "type": "switch",
+      "default": false
+    },
+    {
+      "key": "fan",
+      "title": "Fan",
+      "type": "switch",
+      "default": true
+    },
+    {
+      "key": "capture",
+      "title": "Capture Image",
+      "type": "button",
+      "text": "Capture"
+    },
+    {
+      "key": "reset",
+      "title": "Reset ESP32",
+      "type": "button",
+      "text": "Reset"
+    }
+  ]
+}

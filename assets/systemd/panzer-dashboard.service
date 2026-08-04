@@ -1,0 +1,21 @@
+[Unit]
+Description=Panzer Robotics Dashboard
+After=network.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=/home/pi/Panzer/raspi-dashboard
+
+ExecStart=/usr/bin/python3 /home/pi/Panzer/raspi-dashboard/main.py
+
+Restart=always
+RestartSec=5
+
+User=pi
+
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+
+[Install]
+WantedBy=multi-user.target

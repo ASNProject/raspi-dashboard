@@ -1,0 +1,83 @@
+{
+  "cards": [
+    {
+      "key": "temperature",
+      "title": "Temperature",
+      "unit": "°C",
+      "color": "#ff6b6b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "humidity",
+      "title": "Humidity",
+      "unit": "%",
+      "color": "#4dabf7",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "gas",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s1",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s2",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s3",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s4",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s5",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    },
+    {
+      "key": "s6",
+      "title": "Gas",
+      "unit": "ppm",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 500
+
+    }
+  ]
+}
