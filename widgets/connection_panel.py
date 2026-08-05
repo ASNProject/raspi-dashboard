@@ -47,13 +47,13 @@ class ConnectionPanel(QWidget):
         self.status.setObjectName("ConnectionStatus")
 
         port = Config.get(
-            "serial",
+            "config",
             "port",
             default="COM3",
         )
 
         baudrate = Config.get(
-            "serial",
+            "config",
             "baudrate",
             default=115200,
         )

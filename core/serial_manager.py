@@ -129,3 +129,27 @@ class SerialManager(QObject):
         self.ser = None
 
         self.disconnected.emit()
+
+    def send(self, packet: dict):
+
+        if not self.ser or not self.ser.is_open:
+            self.error.emit("Serial belum terhubung")
+            return False
+
+        try:
+
+            message = json.dumps(packet) + "\n"
+
+            self.ser.write(message.encode("utf-8"))
+
+            self.ser.flush()
+
+            print("SEND :", message.strip())
+
+            return True
+
+        except Exception as e:
+
+            self.error.emit(str(e))
+
+            return False

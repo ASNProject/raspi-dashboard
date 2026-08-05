@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from core.config_manager import Config
-from core.dummy_data import DummyData
 from PySide6.QtWidgets import QSizePolicy
 
 from widgets.card import Card
@@ -175,22 +174,6 @@ class Dashboard(QWidget):
 
         mainLayout.addWidget(self.toolbar, 0)
 
-        # ======================================================
-        # DUMMY
-        # ======================================================
-
-        self.dummy = DummyData()
-
-        self.dummy.sensorChanged.connect(
-            self.update_sensor
-        )
-
-        self.dummy.fpsChanged.connect(
-            self.update_fps
-        )
-
-        self.dummy.start()
-
     # ==========================================================
     # CREATE CARD
     # ==========================================================
@@ -221,43 +204,6 @@ class Dashboard(QWidget):
             if col >= columns:
                 col = 0
                 row += 1
-
-    # ==========================================================
-    # UPDATE SENSOR
-    # ==========================================================
-
-    def update_sensor(
-            self,
-            temp,
-            hum,
-            gas,
-    ):
-
-        values = {
-            "temperature": temp,
-            "humidity": hum,
-            "gas": gas,
-        }
-
-        self.sensorChart.update_data(values)
-
-        self.update_card(
-            "temperature",
-            f"{temp:.1f}",
-            "Normal" if temp < 30 else "Warning",
-        )
-
-        self.update_card(
-            "humidity",
-            f"{hum:.1f}",
-            "Optimal" if hum < 70 else "High",
-        )
-
-        self.update_card(
-            "gas",
-            f"{gas:.0f}",
-            "Safe" if gas < 250 else "Danger",
-        )
 
     # ==========================================================
     # UPDATE FPS
@@ -378,29 +324,17 @@ class Dashboard(QWidget):
 
     def process_packet(self, packet):
 
-        packet_type = packet.get("type")
+        if packet.get("type") != "sensor":
+            return
 
-        if packet_type == "sensor":
+        data = packet.get("data", {})
 
-            data = packet.get("data", {})
+        self.sensorChart.update_data(data)
 
-            self.sensorChart.update_data(data)
+        for key, value in data.items():
 
-            for key, value in data.items():
+            if key in self.sensorCards:
 
-                self.update_card(
-                    key,
-                    value,
-                )
+                self.sensorCards[key].set_value(value)
 
-        elif packet_type == "control":
-
-            key = packet.get("key")
-
-            value = packet.get("value")
-
-            if key in self.controlCards:
-
-                self.controlCards[key].set_state(
-                    value == "true"
-                )
+                self.sensorCards[key].set_status("Connected")
