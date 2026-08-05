@@ -333,8 +333,8 @@ class Dashboard(QWidget):
 
         for key, value in data.items():
 
-            if key in self.sensorCards:
-
-                self.sensorCards[key].set_value(value)
-
-                self.sensorCards[key].set_status("Connected")
+            self.update_card(
+                key=key,
+                value=value,
+                status="Connected",
+        )
