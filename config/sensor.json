@@ -3,7 +3,7 @@
     {
       "key": "temperature",
       "title": "Temperature",
-      "unit": "°C",
+      "unit": "C",
       "color": "#ff6b6b",
       "min": 0,
       "max": 100
@@ -17,67 +17,124 @@
       "max": 100
     },
     {
-      "key": "gas",
-      "title": "Gas",
-      "unit": "ppm",
+      "key": "ph",
+      "title": "Soil pH",
+      "unit": "pH",
       "color": "#51cf66",
       "min": 0,
-      "max": 500
-
+      "max": 14
     },
     {
-      "key": "s1",
-      "title": "Gas",
-      "unit": "ppm",
-      "color": "#51cf66",
+      "key": "conductivity",
+      "title": "Conductivity",
+      "unit": "uS/cm",
+      "color": "#9775fa",
       "min": 0,
-      "max": 500
-
+      "max": 5000
     },
     {
-      "key": "s2",
-      "title": "Gas",
-      "unit": "ppm",
-      "color": "#51cf66",
+      "key": "nitrogen",
+      "title": "Nitrogen",
+      "unit": "mg/kg",
+      "color": "#20c997",
       "min": 0,
-      "max": 500
-
+      "max": 200
     },
     {
-      "key": "s3",
-      "title": "Gas",
-      "unit": "ppm",
-      "color": "#51cf66",
+      "key": "phosphorus",
+      "title": "Phosphorus",
+      "unit": "mg/kg",
+      "color": "#fab005",
       "min": 0,
-      "max": 500
-
+      "max": 200
     },
     {
-      "key": "s4",
-      "title": "Gas",
-      "unit": "ppm",
-      "color": "#51cf66",
+      "key": "potassium",
+      "title": "Potassium",
+      "unit": "mg/kg",
+      "color": "#fd7e14",
       "min": 0,
-      "max": 500
-
+      "max": 200
     },
     {
-      "key": "s5",
-      "title": "Gas",
-      "unit": "ppm",
-      "color": "#51cf66",
+      "key": "phwater",
+      "title": "Water pH",
+      "unit": "pH",
+      "color": "#15aabf",
       "min": 0,
-      "max": 500
-
+      "max": 14
     },
     {
-      "key": "s6",
-      "title": "Gas",
+      "key": "temperatureph",
+      "title": "Water Temp (pH)",
+      "unit": "C",
+      "color": "#ff922b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "ec",
+      "title": "EC",
+      "unit": "uS/cm",
+      "color": "#845ef7",
+      "min": 0,
+      "max": 5000
+    },
+    {
+      "key": "temperatureec",
+      "title": "Water Temp (EC)",
+      "unit": "C",
+      "color": "#e8590c",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "salinity",
+      "title": "Salinity",
       "unit": "ppm",
+      "color": "#228be6",
+      "min": 0,
+      "max": 35000
+    },
+    {
+      "key": "tds",
+      "title": "TDS",
+      "unit": "ppm",
+      "color": "#12b886",
+      "min": 0,
+      "max": 3000
+    },
+    {
+      "key": "dosaturation",
+      "title": "DO Saturation",
+      "unit": "%",
+      "color": "#74c0fc",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "do",
+      "title": "Dissolved Oxygen",
+      "unit": "mg/L",
+      "color": "#339af0",
+      "min": 0,
+      "max": 20
+    },
+    {
+      "key": "temperaturedo",
+      "title": "Water Temp (DO)",
+      "unit": "C",
+      "color": "#ff8787",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "battery",
+      "title": "Battery",
+      "unit": "V",
       "color": "#51cf66",
       "min": 0,
-      "max": 500
-
+      "max": 15
     }
   ]
 }
