@@ -157,8 +157,6 @@ class Dashboard(QWidget):
             controls
         )
 
-        print("Controls", controls)
-
         contentLayout.addLayout(self.controlGrid)
 
         # ======================================================
@@ -377,3 +375,32 @@ class Dashboard(QWidget):
             "type": "button",
             "key": key,
         })
+
+    def process_packet(self, packet):
+
+        packet_type = packet.get("type")
+
+        if packet_type == "sensor":
+
+            data = packet.get("data", {})
+
+            self.sensorChart.update_data(data)
+
+            for key, value in data.items():
+
+                self.update_card(
+                    key,
+                    value,
+                )
+
+        elif packet_type == "control":
+
+            key = packet.get("key")
+
+            value = packet.get("value")
+
+            if key in self.controlCards:
+
+                self.controlCards[key].set_state(
+                    value == "true"
+                )

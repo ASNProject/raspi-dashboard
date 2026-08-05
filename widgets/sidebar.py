@@ -1,3 +1,4 @@
+
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap
 
@@ -19,8 +20,10 @@ from widgets.system_panel import SystemPanel
 
 class Sidebar(QWidget):
 
-    def __init__(self):
+    def __init__(self, serial):
         super().__init__()
+
+        self.serial = serial
 
         self.systemPanel = None
         self.logo = None
@@ -156,7 +159,7 @@ class Sidebar(QWidget):
         # CONNECTION PANEL
         # =====================================================
 
-        self.connectionPanel = ConnectionPanel()
+        self.connectionPanel = ConnectionPanel(self.serial)
         mainLayout.addWidget(self.connectionPanel)
 
         mainLayout.addSpacing(10)
