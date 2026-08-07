@@ -341,6 +341,7 @@ class Dashboard(QWidget):
                 control_type=control.get("type", "switch"),
                 state=control.get("default", False),
                 button_text=control.get("text", "Execute"),
+                value=control.get("value", None)
             )
 
             card.toggled.connect(self.control_changed)
@@ -364,11 +365,12 @@ class Dashboard(QWidget):
             }
         )
 
-    def control_pressed(self, key):
+    def control_pressed(self, key, value):
 
         self.serial.send({
             "type": "button",
             "key": key,
+            "value": value,
         })
 
     def process_packet(self, packet):
@@ -377,6 +379,8 @@ class Dashboard(QWidget):
             return
 
         data = packet.get("data", {})
+
+        self.sensorChart.update_data(data)
 
         for key, value in data.items():
 

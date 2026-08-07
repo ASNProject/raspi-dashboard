@@ -45,8 +45,6 @@ class SensorChart(Card):
         self.chart.legend().hide()
         legend = self.chart.legend()
 
-        print("Legend markers :", len(legend.markers()))
-
         self.chart.setMargins(QMargins(10, 10, 10, 10))
 
         self.chart.setAnimationOptions(QChart.NoAnimation)

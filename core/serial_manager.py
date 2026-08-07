@@ -17,6 +17,9 @@ class SerialManager(QObject):
         super().__init__()
 
         self.ser = None
+        self.running = False
+
+    def open(self, port, baudrate):
 
         self.running = False
 
@@ -47,7 +50,7 @@ class SerialManager(QObject):
                 baudrate=self.baudrate,
                 timeout=0.1,
             )
-            
+
             time.sleep(2)
 
             self.ser.reset_input_buffer()

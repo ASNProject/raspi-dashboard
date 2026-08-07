@@ -11,7 +11,7 @@ from widgets.card import Card
 class ControlCard(Card):
 
     toggled = Signal(str, bool)
-    clicked = Signal(str)
+    clicked = Signal(str, object)
 
     def __init__(
             self,
@@ -20,12 +20,14 @@ class ControlCard(Card):
             control_type="switch",
             state=False,
             button_text="Execute",
+            value=None
     ):
         super().__init__()
 
         self.key = key
         self.type = control_type
         self.state = state
+        self.value = value
 
         self.setSizePolicy(
             QSizePolicy.Preferred,
@@ -102,7 +104,8 @@ class ControlCard(Card):
     def press(self):
 
         self.clicked.emit(
-            self.key
+            self.key,
+            self.value
         )
 
     # ==========================================
@@ -135,10 +138,10 @@ class ControlCard(Card):
 
         if self.state:
 
-            self.statusLabel.setText("🟢 ON")
+            self.statusLabel.setText("ðŸŸ¢ ON")
             self.button.setText("Turn OFF")
 
         else:
 
-            self.statusLabel.setText("⚪ OFF")
+            self.statusLabel.setText("âšª OFF")
             self.button.setText("Turn ON")

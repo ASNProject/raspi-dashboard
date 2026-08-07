@@ -16,13 +16,15 @@
       "key": "capture",
       "title": "Capture Image",
       "type": "button",
-      "text": "Capture"
+      "text": "Capture",
+      "value": "capture"
     },
     {
       "key": "reset",
       "title": "Reset ESP32",
       "type": "button",
-      "text": "Reset"
+      "text": "Reset",
+      "value": "reset"
     }
   ]
 }

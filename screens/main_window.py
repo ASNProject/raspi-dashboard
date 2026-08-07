@@ -29,7 +29,6 @@ class MainWindow(QMainWindow):
 
         self.sidebar = None
         self.pages = None
-
         self.pageMap = {}
 
         # =============================
@@ -105,7 +104,7 @@ class MainWindow(QMainWindow):
         # Sidebar
         # ==========================================
 
-        self.sidebar = Sidebar()
+        self.sidebar = Sidebar(self.serial)
 
         layout.addWidget(
             self.sidebar,

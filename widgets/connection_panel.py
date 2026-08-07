@@ -1,10 +1,7 @@
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QLabel,
-    QPushButton,
-    QComboBox,
 )
 
 from core.config_manager import Config
@@ -12,59 +9,134 @@ from core.config_manager import Config
 
 class ConnectionPanel(QWidget):
 
-    def __init__(self):
+    def __init__(self, serial):
         super().__init__()
 
-        self.baudCombo = None
-        self.portCombo = None
-        self.status = None
-        self.connectButton = None
+        self.serial = serial
+
+        self.connected = False
+
         self.setObjectName("ConnectionPanel")
+
+        self.status = None
+        self.portLabel = None
+        self.baudLabel = None
 
         self.init_ui()
 
+        self.bind_events()
+
+    # =====================================================
+    # UI
+    # =====================================================
+
     def init_ui(self):
+
         layout = QVBoxLayout(self)
 
         layout.setContentsMargins(15, 15, 15, 15)
         layout.setSpacing(8)
 
-        title = QLabel(Config.get("app", "connectionNameLabel"))
+        title = QLabel(
+            Config.get("app", "connectionNameLabel")
+        )
+
         title.setObjectName("ConnectionTitle")
 
-        self.status = QLabel(Config.get("app", "disconnected"))
+        self.status = QLabel("Disconnected")
         self.status.setObjectName("ConnectionStatus")
 
-        portLabel = QLabel(Config.get("app", "port"))
+        port = Config.get(
+            "config",
+            "port",
+            default="COM3",
+        )
 
-        self.portCombo = QComboBox()
-        self.portCombo.addItem(Config.get("app", "selectPort"))
+        baudrate = Config.get(
+            "config",
+            "baudrate",
+            default=115200,
+        )
 
-        baudLabel = QLabel(Config.get("app", "baudRate"))
+        self.portLabel = QLabel(
+            f"Port : {port}"
+        )
 
-        self.baudCombo = QComboBox()
-        self.baudCombo.addItems([
-            "9600",
-            "57600",
-            "115200"
-        ])
-
-        self.baudCombo.setCurrentText("115200")
-
-        self.connectButton = QPushButton(Config.get("app", "connectButton"))
-        self.connectButton.setObjectName("PrimaryButton")
-
+        self.baudLabel = QLabel(
+            f"Baudrate : {baudrate}"
+        )
         layout.addWidget(title)
         layout.addWidget(self.status)
 
-        layout.addSpacing(5)
+        layout.addSpacing(10)
 
-        layout.addWidget(portLabel)
-        layout.addWidget(self.portCombo)
-
-        layout.addWidget(baudLabel)
-        layout.addWidget(self.baudCombo)
+        layout.addWidget(self.portLabel)
+        layout.addWidget(self.baudLabel)
 
         layout.addStretch()
 
-        layout.addWidget(self.connectButton)
+    # =====================================================
+    # SIGNAL
+    # =====================================================
+
+    def bind_events(self):
+
+        self.serial.connected.connect(
+            self.on_connected
+        )
+
+        self.serial.disconnected.connect(
+            self.on_disconnected
+        )
+
+        self.serial.error.connect(
+            self.on_error
+        )
+
+    # =====================================================
+    # CONNECTED
+    # =====================================================
+
+    def on_connected(self):
+        print("CONNECTED SIGNAL MASUK")
+
+        self.connected = True
+
+        self.status.setText("🟢 Connected")
+
+        self.status.setStyleSheet("""
+            color:#00C853;
+            font-weight:bold;
+        """)
+
+    # =====================================================
+    # DISCONNECTED
+    # =====================================================
+
+    def on_disconnected(self):
+
+        self.connected = False
+
+        self.status.setText("🔴 Disconnected")
+
+        self.status.setStyleSheet("""
+            color:#F44336;
+            font-weight:bold;
+        """)
+
+    # =====================================================
+    # ERROR
+    # =====================================================
+
+    def on_error(self, message):
+
+        self.connected = False
+
+        self.status.setText("🔴 Error")
+
+        self.status.setStyleSheet("""
+            color:#F44336;
+            font-weight:bold;
+        """)
+
+        print(message)
