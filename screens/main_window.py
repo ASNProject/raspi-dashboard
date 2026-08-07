@@ -5,6 +5,8 @@ from PySide6.QtWidgets import (
     QStackedWidget,
 )
 
+from PySide6.QtCore import QThread, QTimer
+
 from core.config_manager import Config
 from core.responsive import Responsive
 from core.serial_manager import SerialManager
@@ -17,6 +19,8 @@ from screens.sidebar.sensor import SensorPage
 from screens.sidebar.control import ControlPage
 from screens.sidebar.settings import SettingsPage
 
+import logging
+
 
 class MainWindow(QMainWindow):
 
@@ -28,10 +32,26 @@ class MainWindow(QMainWindow):
 
         self.pageMap = {}
 
+        # =============================
+        # SERIAL
+        # =============================
+
         self.serial = SerialManager()
 
-        self.init_ui()
+        self.serial.packetReceived.connect(
+            self.packet_received
+        )
 
+        self.thread = QThread()
+
+        self.serial.moveToThread(self.thread)
+        self.thread.started.connect(self.serial.start)
+
+        # =============================
+        # UI
+        # =============================
+
+        self.init_ui()
 
     # ==========================================================
     # UI
@@ -170,7 +190,6 @@ class MainWindow(QMainWindow):
         page = self.pageMap.get(name)
 
         if page:
-
             self.pages.setCurrentWidget(page)
 
     # ==========================================================
@@ -191,11 +210,10 @@ class MainWindow(QMainWindow):
         }
 
         for button, page in navigation.items():
-
             button.clicked.connect(
 
                 lambda checked=False,
-                p=page: self.show_page(p)
+                       p=page: self.show_page(p)
 
             )
 
@@ -224,3 +242,53 @@ class MainWindow(QMainWindow):
                     "update_responsive",
             ):
                 page.update_responsive()
+
+    def packet_received(self, data):
+
+        logging.info(data)
+        print(data)
+
+        dashboard = self.pageMap["dashboard"]
+
+        dashboard.process_packet(data)
+
+    def stop_serial(self):
+
+        self.serial.disconnect()
+
+        if self.thread.isRunning():
+            self.thread.quit()
+
+            self.thread.wait()
+
+    def start_serial(self, port, baudrate):
+
+        logging.info("START SERIAL")
+        print("START SERIAL")
+
+        self.serial.open(port, baudrate)
+
+        logging.info("RUNNING:", self.serial.running)
+        print("RUNNING:", self.serial.running)
+
+        if self.serial.running and not self.thread.isRunning():
+            self.thread.start()
+
+    def showEvent(self, event):
+
+        super().showEvent(event)
+        logging.info("SHOW EVENT")
+        print("SHOW EVENT")
+
+        serialConfig = Config.get("config")
+        logging.info("Serial Config:", serialConfig)
+        print("Serial Config:", serialConfig)
+
+        if serialConfig.get("autoConnect", True):
+            QTimer.singleShot(
+                100,
+                lambda: self.start_serial(
+                    serialConfig["port"],
+                    serialConfig["baudrate"],
+                )
+            )

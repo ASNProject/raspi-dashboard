@@ -129,13 +129,6 @@ class Dashboard(QWidget):
             default=[]
         )
 
-        if not any(card["key"] == "fps" for card in cards):
-            cards.append({
-                "key": "fps",
-                "title": "Camera FPS",
-                "unit": "FPS",
-            })
-
         self.create_sensor_cards(cards)
 
         contentLayout.addLayout(self.cardGrid)
@@ -377,3 +370,18 @@ class Dashboard(QWidget):
             "type": "button",
             "key": key,
         })
+
+    def process_packet(self, packet):
+
+        if packet.get("type") != "sensor":
+            return
+
+        data = packet.get("data", {})
+
+        for key, value in data.items():
+
+            self.update_card(
+                key=key,
+                value=value,
+                status="Connected",
+        )

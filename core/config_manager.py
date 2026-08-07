@@ -25,6 +25,7 @@ class Config:
         cls.serial = cls._read("serial.json")
         cls.theme = cls._read("theme.json")
         cls.control = cls._read("control.json")
+        cls.config = cls._read("config.json")
 
         cls._loaded = True
 
