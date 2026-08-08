@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
         if serialConfig.get("autoConnect", True):
 
             QTimer.singleShot(
-                100,
+                3000,
                 lambda: self.start_serial(
                     serialConfig["port"],
                     serialConfig["baudrate"],

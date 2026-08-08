@@ -1,0 +1,263 @@
+{
+    "cards": [
+        {
+            "key": "module_7in1_temperature",
+            "title": "Temperature",
+            "unit": "°C",
+            "color": "#ff6b6b",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "module_7in1_humidity",
+            "title": "Humidity",
+            "unit": "%",
+            "color": "#4dabf7",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "module_7in1_ph",
+            "title": "pH",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 14
+        },
+        {
+            "key": "module_7in1_conductivity",
+            "title": "Conductivity",
+            "unit": "µS/cm",
+            "color": "#fcc419",
+            "min": 0,
+            "max": 5000
+        },
+        {
+            "key": "module_7in1_nitrogen",
+            "title": "Nitrogen",
+            "unit": "mg",
+            "color": "#845ef7",
+            "min": 0,
+            "max": 1000
+        },
+        {
+            "key": "module_7in1_phosphorus",
+            "title": "Phosphorus",
+            "unit": "mg",
+            "color": "#20c997",
+            "min": 0,
+            "max": 1000
+        },
+        {
+            "key": "module_7in1_potassium",
+            "title": "Potassium",
+            "unit": "mg",
+            "color": "#ff922b",
+            "min": 0,
+            "max": 1000
+        },
+        {
+            "key": "module_7in1_latitude",
+            "title": "Latitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -90,
+            "max": 90
+        },
+        {
+            "key": "module_7in1_longitude",
+            "title": "Longitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -180,
+            "max": 180
+        },
+        {
+            "key": "module_7in1_satelite",
+            "title": "Satelite",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 30
+        },
+        {
+            "key": "module_7in1_battery",
+            "title": "Battery",
+            "unit": "V",
+            "color": "#ffd43b",
+            "min": 0,
+            "max": 15
+        },
+
+        {
+            "key": "water_ph_phwater",
+            "title": "Water pH",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 14
+        },
+        {
+            "key": "water_ph_temperatureph",
+            "title": "Temperature pH",
+            "unit": "°C",
+            "color": "#ff6b6b",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "water_ph_latitude",
+            "title": "Latitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -90,
+            "max": 90
+        },
+        {
+            "key": "water_ph_longitude",
+            "title": "Longitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -180,
+            "max": 180
+        },
+        {
+            "key": "water_ph_satelite",
+            "title": "Satelite",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 30
+        },
+        {
+            "key": "water_ph_battery",
+            "title": "Battery",
+            "unit": "V",
+            "color": "#ffd43b",
+            "min": 0,
+            "max": 15
+        },
+
+        {
+            "key": "water_ec_ec",
+            "title": "EC",
+            "unit": "µS/cm",
+            "color": "#fcc419",
+            "min": 0,
+            "max": 5000
+        },
+        {
+            "key": "water_ec_temperatureec",
+            "title": "Temperature EC",
+            "unit": "°C",
+            "color": "#ff6b6b",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "water_ec_salinity",
+            "title": "Salinity",
+            "unit": "ppm",
+            "color": "#20c997",
+            "min": 0,
+            "max": 100000
+        },
+        {
+            "key": "water_ec_tds",
+            "title": "TDS",
+            "unit": "ppm",
+            "color": "#845ef7",
+            "min": 0,
+            "max": 100000
+        },
+        {
+            "key": "water_ec_latitude",
+            "title": "Latitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -90,
+            "max": 90
+        },
+        {
+            "key": "water_ec_longitude",
+            "title": "Longitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -180,
+            "max": 180
+        },
+        {
+            "key": "water_ec_satelite",
+            "title": "Satelite",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 30
+        },
+        {
+            "key": "water_ec_battery",
+            "title": "Battery",
+            "unit": "V",
+            "color": "#ffd43b",
+            "min": 0,
+            "max": 15
+        },
+
+        {
+            "key": "water_do_dosaturation",
+            "title": "DO Saturation",
+            "unit": "%",
+            "color": "#4dabf7",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "water_do_do",
+            "title": "DO",
+            "unit": "mg/L",
+            "color": "#339af0",
+            "min": 0,
+            "max": 20
+        },
+        {
+            "key": "water_do_temperaturedo",
+            "title": "Temperature DO",
+            "unit": "°C",
+            "color": "#ff6b6b",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "key": "water_do_latitude",
+            "title": "Latitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -90,
+            "max": 90
+        },
+        {
+            "key": "water_do_longitude",
+            "title": "Longitude",
+            "unit": "",
+            "color": "#339af0",
+            "min": -180,
+            "max": 180
+        },
+        {
+            "key": "water_do_satelite",
+            "title": "Satelite",
+            "unit": "",
+            "color": "#51cf66",
+            "min": 0,
+            "max": 30
+        },
+        {
+            "key": "water_do_battery",
+            "title": "Battery",
+            "unit": "V",
+            "color": "#ffd43b",
+            "min": 0,
+            "max": 15
+        }
+    ]
+}

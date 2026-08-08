@@ -30,6 +30,11 @@ class SerialManager(QObject):
                 timeout=0.1,
             )
 
+            time.sleep(2)
+
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
+
             print("OPEN BERHASIL")
 
             self.running = True
