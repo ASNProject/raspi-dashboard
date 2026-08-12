@@ -1,51 +1,84 @@
+from pathlib import Path
+from datetime import datetime
+
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QGridLayout,
     QScrollArea,
+    QSizePolicy,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 from core.config_manager import Config
-from core.dummy_data import DummyData
-from PySide6.QtWidgets import QSizePolicy
 
 from widgets.card import Card
 from widgets.title_label import TitleLabel
 from widgets.camera_preview import CameraPreview
-from widgets.sensor_chart import SensorChart
 from widgets.sensor_card import SensorCard
 from widgets.dashboard_toolbar import DashboardToolbar
-from widgets.control_card import ControlCard
-from PySide6.QtWidgets import QScrollArea
 
 
 class Dashboard(QWidget):
+
+    RECORD_DURATION = 3 * 60  # 3 menit
 
     def __init__(self, serial):
         super().__init__()
 
         self.serial = serial
 
-        self.controlCards = None
-        self.controlGrid = None
-        self.cardGrid = None
         self.setObjectName("DashboardPage")
 
-        self.sensorCards = {}
+        # ======================================================
+        # STATE
+        # ======================================================
 
-        self.sensorChart = None
+        self.sensorCards = {}
+        self.controlCards = {}
+
         self.cameraPreview = None
         self.toolbar = None
-        self.dummy = None
+
+        self.isRecording = False
+        self.isAutoRecording = False
+
+        self.currentRecordId = None
+        self.currentRecordPath = None
+
+        self.recordElapsed = 0
+
+        # ======================================================
+        # TIMER
+        # ======================================================
+
+        self.recordTimer = QTimer(self)
+        self.recordTimer.setInterval(1000)
+        self.recordTimer.timeout.connect(
+            self.update_record_timer
+        )
+
+        # ======================================================
+        # UI
+        # ======================================================
 
         self.init_ui()
+
+    # ==========================================================
+    # UI
+    # ==========================================================
 
     def init_ui(self):
 
         mainLayout = QVBoxLayout(self)
 
-        mainLayout.setContentsMargins(20, 20, 20, 20)
+        mainLayout.setContentsMargins(
+            20,
+            20,
+            20,
+            20
+        )
+
         mainLayout.setSpacing(20)
 
         # ======================================================
@@ -58,44 +91,69 @@ class Dashboard(QWidget):
             Config.get(
                 "app",
                 "windowTitle",
-                default="Panzer Dashboard",
+                default="ALAT IMAGE AND SENSOR RECORDING"
             )
         )
 
         headerCard.layout.addWidget(title)
 
-        mainLayout.addWidget(headerCard, 0)
+        mainLayout.addWidget(headerCard)
 
         # ======================================================
-        # CONTENT SCROLL
+        # CONTENT
         # ======================================================
 
         scrollArea = QScrollArea()
+
         scrollArea.setWidgetResizable(True)
-        scrollArea.setFrameShape(QScrollArea.NoFrame)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        scrollArea.setFrameShape(
+            QScrollArea.NoFrame
+        )
+
+        scrollArea.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarAlwaysOff
+        )
 
         scrollWidget = QWidget()
-        scrollWidget.setObjectName("DashboardContent")
+
+        scrollWidget.setObjectName(
+            "DashboardContent"
+        )
 
         scrollWidget.setSizePolicy(
             QSizePolicy.Expanding,
             QSizePolicy.Minimum
         )
 
-        contentLayout = QVBoxLayout(scrollWidget)
-        contentLayout.setContentsMargins(8, 8, 8, 8)
-        contentLayout.setSpacing(20)
-        contentLayout.setAlignment(Qt.AlignTop)
+        contentLayout = QVBoxLayout(
+            scrollWidget
+        )
+
+        contentLayout.setContentsMargins(
+            8,
+            8,
+            8,
+            8
+        )
 
         contentLayout.setSpacing(20)
 
-        scrollArea.setWidget(scrollWidget)
+        contentLayout.setAlignment(
+            Qt.AlignTop
+        )
 
-        mainLayout.addWidget(scrollArea, 1)
+        scrollArea.setWidget(
+            scrollWidget
+        )
+
+        mainLayout.addWidget(
+            scrollArea,
+            1
+        )
 
         # ======================================================
-        # CAMERA + CHART
+        # CAMERA + SENSOR
         # ======================================================
 
         topGrid = QGridLayout()
@@ -103,56 +161,75 @@ class Dashboard(QWidget):
         topGrid.setHorizontalSpacing(20)
         topGrid.setVerticalSpacing(20)
 
+        # ------------------------------------------------------
+        # CAMERA
+        # ------------------------------------------------------
+
         self.cameraPreview = CameraPreview()
-        self.sensorChart = SensorChart()
 
-        topGrid.addWidget(self.cameraPreview, 0, 0)
-        topGrid.addWidget(self.sensorChart, 0, 1)
+        topGrid.addWidget(
+            self.cameraPreview,
+            0,
+            0,
+            2,
+            1
+        )
 
-        topGrid.setColumnStretch(0, 4)
-        topGrid.setColumnStretch(1, 6)
-
-        contentLayout.addLayout(topGrid)
-
-        # ======================================================
+        # ------------------------------------------------------
         # SENSOR CARDS
-        # ======================================================
+        # ------------------------------------------------------
 
         self.cardGrid = QGridLayout()
 
-        self.cardGrid.setHorizontalSpacing(15)
-        self.cardGrid.setVerticalSpacing(15)
+        self.cardGrid.setHorizontalSpacing(8)
+        self.cardGrid.setVerticalSpacing(8)
 
-        cards = Config.get(
-            "sensor",
-            "cards",
-            default=[]
+        self.cardGrid.setContentsMargins(
+            0,
+            0,
+            0,
+            0
         )
+
+        self.cardGrid.setAlignment(
+            Qt.AlignTop
+        )
+
+        cards = Config.get("sensor", "cards", default=[])
 
         self.create_sensor_cards(cards)
 
-        contentLayout.addLayout(self.cardGrid)
+        topGrid.addLayout(self.cardGrid, 0, 1, 2, 1, Qt.AlignTop)
 
         # ======================================================
-        # CONTROL CARD
+        # COLUMN SIZE
         # ======================================================
 
-        self.controlGrid = QGridLayout()
-        self.controlGrid.setSpacing(15)
-
-        controls = Config.get(
-            "control",
-            "cards",
-            default=[],
+        topGrid.setColumnStretch(
+            0,
+            7
         )
 
-        self.create_control_cards(
-            controls
+        topGrid.setColumnStretch(
+            1,
+            3
         )
 
-        print("Controls", controls)
+        contentLayout.addLayout(
+            topGrid
+        )
 
-        contentLayout.addLayout(self.controlGrid)
+        # ======================================================
+        # RECORDING STATUS
+        # ======================================================
+
+        self.statusLabel = TitleLabel(
+            "READY"
+        )
+
+        self.recordInfoLabel = TitleLabel(
+            "Belum ada rekaman"
+        )
 
         # ======================================================
         # TOOLBAR
@@ -160,46 +237,48 @@ class Dashboard(QWidget):
 
         self.toolbar = DashboardToolbar()
 
-        self.toolbar.startButton.clicked.connect(
-            self.cameraPreview.start_camera
+        # Manual recording
+        self.toolbar.startManualButton.clicked.connect(
+            self.start_manual_record
         )
 
-        self.toolbar.stopButton.clicked.connect(
-            self.cameraPreview.stop_camera
+        # Auto recording 3 menit
+        self.toolbar.startAutoButton.clicked.connect(
+            self.start_auto_record
         )
 
-        mainLayout.addWidget(self.toolbar, 0)
+        # Stop recording
+        self.toolbar.stopRecordButton.clicked.connect(
+            self.stop_record
+        )
+
+        mainLayout.addWidget(
+            self.toolbar
+        )
 
         # ======================================================
-        # DUMMY
+        # INITIAL STATE
         # ======================================================
 
-        self.dummy = DummyData()
-
-        self.dummy.sensorChanged.connect(
-            self.update_sensor
+        self.set_recording_status(
+            "READY",
+            "Siap melakukan recording"
         )
-
-        self.dummy.fpsChanged.connect(
-            self.update_fps
-        )
-
-        self.dummy.start()
 
     # ==========================================================
-    # CREATE CARD
+    # SENSOR CARDS
     # ==========================================================
 
     def create_sensor_cards(self, sensors):
 
         self.sensorCards.clear()
 
-        columns = 4
+        columns = 2
 
-        row = 0
-        col = 0
+        for index, sensor in enumerate(sensors):
 
-        for sensor in sensors:
+            row = index // columns
+            col = index % columns
 
             card = SensorCard(
                 title=sensor["title"],
@@ -207,95 +286,84 @@ class Dashboard(QWidget):
                 unit=sensor["unit"],
             )
 
-            self.sensorCards[sensor["key"]] = card
+            self.sensorCards[
+                sensor["key"]
+            ] = card
 
-            self.cardGrid.addWidget(card, row, col)
+            self.cardGrid.addWidget(
+                card,
+                row,
+                col
+            )
 
-            col += 1
+    # ==========================================================
+    # SENSOR UPDATE
+    # ==========================================================
 
-            if col >= columns:
-                col = 0
-                row += 1
+    def process_packet(self, packet):
+
+        packet_type = packet.get(
+            "type"
+        )
+
+        # ======================================================
+        # SENSOR
+        # ======================================================
+
+        if packet_type == "sensor":
+
+            data = packet.get(
+                "data",
+                {}
+            )
+
+            self.update_sensor(
+                data
+            )
+
+        # ======================================================
+        # DEVICE STATUS
+        # ======================================================
+
+        elif packet_type == "status":
+
+            status = packet.get(
+                "status",
+                "UNKNOWN"
+            )
+
+            self.set_recording_status(
+                status,
+                packet.get(
+                    "message",
+                    ""
+                )
+            )
 
     # ==========================================================
     # UPDATE SENSOR
     # ==========================================================
 
-    def update_sensor(
-            self,
-            temp,
-            hum,
-            gas,
-    ):
+    def update_sensor(self, data):
 
-        values = {
-            "temperature": temp,
-            "humidity": hum,
-            "gas": gas,
-        }
+        for key, value in data.items():
 
-        self.sensorChart.update_data(values)
+            if key not in self.sensorCards:
+                continue
 
-        self.update_card(
-            "temperature",
-            f"{temp:.1f}",
-            "Normal" if temp < 30 else "Warning",
-        )
-
-        self.update_card(
-            "humidity",
-            f"{hum:.1f}",
-            "Optimal" if hum < 70 else "High",
-        )
-
-        self.update_card(
-            "gas",
-            f"{gas:.0f}",
-            "Safe" if gas < 250 else "Danger",
-        )
+            self.update_card(
+                key,
+                value
+            )
 
     # ==========================================================
-    # UPDATE FPS
+    # UPDATE CARD
     # ==========================================================
-
-    def update_fps(self, fps):
-
-        self.update_card(
-            "fps",
-            fps,
-            "Connected",
-        )
-
-    # ==========================================================
-    # ADD CARD RUNTIME
-    # ==========================================================
-
-    def add_sensor_card(self, key, title, unit):
-
-        total = len(self.sensorCards)
-
-        row = total // 4
-        col = total % 4
-
-        card = SensorCard(
-            title=title,
-            value="--",
-            unit=unit,
-        )
-
-        self.sensorCards[key] = card
-
-        self.cardGrid.addWidget(
-            card,
-            row,
-            col,
-        )
 
     def update_card(
-            self,
-            key,
-            value,
-            status=None,
+        self,
+        key,
+        value
     ):
 
         if key not in self.sensorCards:
@@ -303,89 +371,301 @@ class Dashboard(QWidget):
 
         card = self.sensorCards[key]
 
-        unit = ""
-
-        cards = Config.get(
-            "sensor",
-            "cards",
-            default=[]
+        card.set_value(
+            value,
+            card.unit
+            if hasattr(card, "unit")
+            else ""
         )
 
-        for sensor in cards:
+    # ==========================================================
+    # START MANUAL
+    # ==========================================================
 
-            if sensor["key"] == key:
-                unit = sensor["unit"]
-                break
+    def start_manual_record(self):
 
-        if key == "fps":
-            unit = "FPS"
+        if self.isRecording:
+            return
 
-        card.set_value(value, unit)
+        self.start_recording(
+            auto=False
+        )
 
-        if status:
-            card.set_status(status)
+    # ==========================================================
+    # START AUTO
+    # ==========================================================
 
-    def create_control_cards(self, controls):
+    def start_auto_record(self):
 
-        self.controlCards = {}
+        if self.isRecording:
+            return
 
-        columns = 4
+        self.start_recording(
+            auto=True
+        )
 
-        for index, control in enumerate(controls):
-            row = index // columns
-            col = index % columns
+    # ==========================================================
+    # START RECORDING
+    # ==========================================================
 
-            card = ControlCard(
-                key=control["key"],
-                title=control["title"],
-                control_type=control.get("type", "switch"),
-                state=control.get("default", False),
-                button_text=control.get("text", "Execute"),
-                value=control.get("value", None)
-            )
-
-            card.toggled.connect(self.control_changed)
-            card.clicked.connect(self.control_pressed)
-
-            self.controlCards[control.get("key", "")] = card
-
-            self.controlGrid.addWidget(card, row, col)
-
-    def control_changed(
-            self,
-            key,
-            state,
+    def start_recording(
+        self,
+        auto=False
     ):
+
+        if self.isRecording:
+            return
+
+        # ------------------------------------------------------
+        # CREATE RECORD ID
+        # ------------------------------------------------------
+
+        record_id = self.generate_record_id()
+
+        # ------------------------------------------------------
+        # SSD PATH
+        # ------------------------------------------------------
+
+        basePath = Config.get(
+            "config",
+            "recordingPath",
+            default="/records"
+        )
+
+        basePath = Path(
+            basePath
+        )
+
+        recordPath = (
+            basePath /
+            record_id
+        )
+
+        recordPath.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # ------------------------------------------------------
+        # STATE
+        # ------------------------------------------------------
+
+        self.isRecording = True
+        self.isAutoRecording = auto
+
+        self.currentRecordId = record_id
+        self.currentRecordPath = recordPath
+
+        self.recordElapsed = 0
+
+        # ------------------------------------------------------
+        # CAMERA
+        # ------------------------------------------------------
+
+        self.cameraPreview.start_recording(
+            str(recordPath)
+        )
+
+        # ------------------------------------------------------
+        # SERIAL
+        # ------------------------------------------------------
 
         self.serial.send(
             {
-                "type": "control",
-                "key": key,
-                "value": state,
+                "type": "record",
+                "command": "start",
+                "mode": "auto"
+                if auto
+                else "manual",
+                "record_id": record_id,
             }
         )
 
-    def control_pressed(self, key, value):
+        # ------------------------------------------------------
+        # TIMER
+        # ------------------------------------------------------
 
-        self.serial.send({
-            "type": "button",
-            "key": key,
-            "value": value,
-        })
+        self.recordTimer.start()
 
-    def process_packet(self, packet):
+        # ------------------------------------------------------
+        # STATUS
+        # ------------------------------------------------------
 
-        if packet.get("type") != "sensor":
+        mode = (
+            "AUTO - 3 MENIT"
+            if auto
+            else "MANUAL"
+        )
+
+        self.set_recording_status(
+            "● RECORDING",
+            f"{mode} | {record_id}"
+        )
+
+        self.toolbar.recordInfoLabel.setText(
+            f"Folder: {recordPath}"
+        )
+
+    # ==========================================================
+    # STOP RECORDING
+    # ==========================================================
+
+    def stop_record(self):
+
+        if not self.isRecording:
             return
 
-        data = packet.get("data", {})
+        # ------------------------------------------------------
+        # STOP TIMER
+        # ------------------------------------------------------
 
-        self.sensorChart.update_data(data)
+        self.recordTimer.stop()
 
-        for key, value in data.items():
+        # ------------------------------------------------------
+        # STOP CAMERA
+        # ------------------------------------------------------
 
-            self.update_card(
-                key=key,
-                value=value,
-                status="Connected",
+        self.cameraPreview.stop_recording()
+
+        # ------------------------------------------------------
+        # SERIAL
+        # ------------------------------------------------------
+
+        self.serial.send(
+            {
+                "type": "record",
+                "command": "stop",
+                "record_id": self.currentRecordId,
+            }
+        )
+
+        # ------------------------------------------------------
+        # STATUS
+        # ------------------------------------------------------
+
+        recordPath = self.currentRecordPath
+
+        self.isRecording = False
+        self.isAutoRecording = False
+
+        self.set_recording_status(
+            "RECORDING SELESAI",
+            self.currentRecordId
+        )
+
+        self.toolbar.recordInfoLabel.setText(
+            f"Tersimpan di: {recordPath}"
+        )
+
+        self.currentRecordId = None
+        self.currentRecordPath = None
+
+    # ==========================================================
+    # RECORD TIMER
+    # ==========================================================
+
+    def update_record_timer(self):
+
+        if not self.isRecording:
+            return
+
+        self.recordElapsed += 1
+
+        minutes = self.recordElapsed // 60
+        seconds = self.recordElapsed % 60
+
+        elapsed = (
+            f"{minutes:02d}:{seconds:02d}"
+        )
+
+        # ------------------------------------------------------
+        # AUTO STOP 3 MENIT
+        # ------------------------------------------------------
+
+        if (
+            self.isAutoRecording
+            and self.recordElapsed >= self.RECORD_DURATION
+        ):
+
+            self.stop_record()
+
+            return
+
+        mode = (
+            "AUTO"
+            if self.isAutoRecording
+            else "MANUAL"
+        )
+
+        self.toolbar.statusLabel.setText(
+            f"● RECORDING | {mode} | {elapsed}"
+        )
+
+    # ==========================================================
+    # RECORD ID
+    # ==========================================================
+
+    def generate_record_id(self):
+
+        basePath = Config.get(
+            "config",
+            "recordingPath",
+            default="/records"
+        )
+        basePath = Path(
+            basePath
+        )
+
+        basePath.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # ======================================================
+        # DATE + TIME
+        # ======================================================
+
+        timestamp = datetime.now().strftime(
+            "%Y-%m-%d_%H-%M-%S"
+        )
+
+        # ======================================================
+        # INDEX
+        # ======================================================
+
+        index = 1
+
+        while True:
+
+            record_id = (
+                f"REC-{index:04d}_"
+                f"{timestamp}"
+            )
+
+            recordPath = (
+                basePath /
+                record_id
+            )
+
+            if not recordPath.exists():
+                return record_id
+
+            index += 1
+
+    # ==========================================================
+    # STATUS
+    # ==========================================================
+
+    def set_recording_status(
+        self,
+        status,
+        message=""
+    ):
+
+        self.toolbar.statusLabel.setText(
+            status
+        )
+
+        self.toolbar.recordInfoLabel.setText(
+            message
         )

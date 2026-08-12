@@ -1,140 +1,76 @@
 {
   "cards": [
     {
-      "key": "temperature",
-      "title": "Temperature",
-      "unit": "C",
+      "key": "acc_x",
+      "title": "Acceleration X",
+      "unit": "g",
       "color": "#ff6b6b",
-      "min": 0,
-      "max": 100
+      "min": -16,
+      "max": 16
     },
     {
-      "key": "humidity",
-      "title": "Humidity",
-      "unit": "%",
+      "key": "acc_y",
+      "title": "Acceleration Y",
+      "unit": "g",
       "color": "#4dabf7",
-      "min": 0,
-      "max": 100
+      "min": -16,
+      "max": 16
     },
     {
-      "key": "ph",
-      "title": "Soil pH",
-      "unit": "pH",
+      "key": "acc_z",
+      "title": "Acceleration Z",
+      "unit": "g",
       "color": "#51cf66",
-      "min": 0,
-      "max": 14
+      "min": -16,
+      "max": 16
     },
     {
-      "key": "conductivity",
-      "title": "Conductivity",
-      "unit": "uS/cm",
+      "key": "gyro_x",
+      "title": "Gyroscope X",
+      "unit": "°/s",
       "color": "#9775fa",
-      "min": 0,
-      "max": 5000
+      "min": -2000,
+      "max": 2000
     },
     {
-      "key": "nitrogen",
-      "title": "Nitrogen",
-      "unit": "mg/kg",
-      "color": "#20c997",
-      "min": 0,
-      "max": 200
-    },
-    {
-      "key": "phosphorus",
-      "title": "Phosphorus",
-      "unit": "mg/kg",
+      "key": "gyro_y",
+      "title": "Gyroscope Y",
+      "unit": "°/s",
       "color": "#fab005",
-      "min": 0,
-      "max": 200
+      "min": -2000,
+      "max": 2000
     },
     {
-      "key": "potassium",
-      "title": "Potassium",
-      "unit": "mg/kg",
+      "key": "gyro_z",
+      "title": "Gyroscope Z",
+      "unit": "°/s",
       "color": "#fd7e14",
-      "min": 0,
-      "max": 200
+      "min": -2000,
+      "max": 2000
     },
     {
-      "key": "phwater",
-      "title": "Water pH",
-      "unit": "pH",
+      "key": "voltage",
+      "title": "Voltage",
+      "unit": "V",
       "color": "#15aabf",
       "min": 0,
-      "max": 14
+      "max": 30
     },
     {
-      "key": "temperatureph",
-      "title": "Water Temp (pH)",
-      "unit": "C",
-      "color": "#ff922b",
-      "min": 0,
-      "max": 100
-    },
-    {
-      "key": "ec",
-      "title": "EC",
-      "unit": "uS/cm",
+      "key": "current",
+      "title": "Current",
+      "unit": "A",
       "color": "#845ef7",
       "min": 0,
-      "max": 5000
+      "max": 10
     },
     {
-      "key": "temperatureec",
-      "title": "Water Temp (EC)",
-      "unit": "C",
+      "key": "power",
+      "title": "Power",
+      "unit": "W",
       "color": "#e8590c",
       "min": 0,
-      "max": 100
-    },
-    {
-      "key": "salinity",
-      "title": "Salinity",
-      "unit": "ppm",
-      "color": "#228be6",
-      "min": 0,
-      "max": 35000
-    },
-    {
-      "key": "tds",
-      "title": "TDS",
-      "unit": "ppm",
-      "color": "#12b886",
-      "min": 0,
-      "max": 3000
-    },
-    {
-      "key": "dosaturation",
-      "title": "DO Saturation",
-      "unit": "%",
-      "color": "#74c0fc",
-      "min": 0,
-      "max": 100
-    },
-    {
-      "key": "do",
-      "title": "Dissolved Oxygen",
-      "unit": "mg/L",
-      "color": "#339af0",
-      "min": 0,
-      "max": 20
-    },
-    {
-      "key": "temperaturedo",
-      "title": "Water Temp (DO)",
-      "unit": "C",
-      "color": "#ff8787",
-      "min": 0,
-      "max": 100
-    },
-    {
-      "key": "battery",
-      "title": "Battery",
-      "unit": "V",
-      "color": "#51cf66",
-      "min": 0,
-      "max": 15
+      "max": 300
     }
   ]
 }

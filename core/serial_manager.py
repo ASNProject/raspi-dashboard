@@ -19,14 +19,10 @@ class SerialManager(QObject):
         self.ser = None
         self.running = False
 
-    def open(self, port, baudrate):
-
-        self.running = False
+        self._connected = False
 
         self.port = None
         self.baudrate = None
-
-        self._connected = False
 
     def open(self, port, baudrate):
 

@@ -1,7 +1,7 @@
 {
   "appName": "Panzer Robotics Dashboard",
-  "windowTitle": "Panzer Robotics Dashboard",
-  "windowWidth": 400,
+  "windowTitle": " Image and Sensor Recording Dashboard",
+  "windowWidth": 1024,
   "windowHeight": 800,
   "theme": "dark",
   "sidebarName": "Panzer Robotics",

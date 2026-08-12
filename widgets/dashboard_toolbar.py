@@ -1,7 +1,9 @@
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QVBoxLayout,
     QPushButton,
+    QLabel,
 )
 
 from widgets.card import Card
@@ -18,54 +20,108 @@ class DashboardToolbar(Card):
         layout = QHBoxLayout()
         layout.setSpacing(12)
 
-        self.startButton = self.create_button(
-            "Start Camera",
+        # ======================================================
+        # BUTTONS
+        # ======================================================
+
+        self.startManualButton = self.create_button(
+            "Start Manual",
             "play"
         )
 
-        self.stopButton = self.create_button(
-            "Stop Camera",
+        self.startAutoButton = self.create_button(
+            "Auto Record",
+            "play"
+        )
+
+        self.stopRecordButton = self.create_button(
+            "Stop Record",
             "stop"
         )
 
-        self.refreshButton = self.create_button(
-            "Refresh",
-            "refresh"
+        layout.addWidget(
+            self.startManualButton
         )
 
-        self.saveButton = self.create_button(
-            "Save Data",
-            "save"
+        layout.addWidget(
+            self.startAutoButton
         )
 
-        self.settingButton = self.create_button(
-            "Settings",
-            "settings"
+        layout.addWidget(
+            self.stopRecordButton
         )
 
-        layout.addWidget(self.startButton)
-        layout.addWidget(self.stopButton)
-        layout.addWidget(self.refreshButton)
+        # ======================================================
+        # SPACER
+        # ======================================================
+
         layout.addStretch()
-        layout.addWidget(self.saveButton)
-        layout.addWidget(self.settingButton)
 
-        self.layout.addLayout(layout)
+        # ======================================================
+        # RECORDING STATUS
+        # ======================================================
+
+        statusLayout = QVBoxLayout()
+        statusLayout.setSpacing(2)
+
+        self.statusLabel = QLabel(
+            "● READY"
+        )
+
+        self.statusLabel.setObjectName(
+            "RecordingStatus"
+        )
+
+        self.recordInfoLabel = QLabel(
+            "Siap melakukan recording"
+        )
+
+        self.recordInfoLabel.setObjectName(
+            "RecordingInfo"
+        )
+
+        statusLayout.addWidget(
+            self.statusLabel
+        )
+
+        statusLayout.addWidget(
+            self.recordInfoLabel
+        )
+
+        layout.addLayout(
+            statusLayout
+        )
+
+        self.layout.addLayout(
+            layout
+        )
+
+    # ==========================================================
+    # BUTTON
+    # ==========================================================
 
     def create_button(self, text, icon):
 
         button = QPushButton(text)
 
-        button.setObjectName("ToolbarButton")
+        button.setObjectName(
+            "ToolbarButton"
+        )
 
-        button.setCursor(Qt.PointingHandCursor)
+        button.setCursor(
+            Qt.PointingHandCursor
+        )
 
         button.setMinimumHeight(42)
 
         button.setMinimumWidth(140)
 
-        button.setIcon(Icons.get(icon))
+        button.setIcon(
+            Icons.get(icon)
+        )
 
-        button.setIconSize(QSize(18, 18))
+        button.setIconSize(
+            QSize(18, 18)
+        )
 
         return button

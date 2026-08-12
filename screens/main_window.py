@@ -104,12 +104,12 @@ class MainWindow(QMainWindow):
         # Sidebar
         # ==========================================
 
-        self.sidebar = Sidebar(self.serial)
+        # self.sidebar = Sidebar(self.serial)
 
-        layout.addWidget(
-            self.sidebar,
-            0,
-        )
+        # layout.addWidget(
+        #     self.sidebar,
+        #     0,
+        # )
 
         # ==========================================
         # Stack Widget
@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
         # Navigation
         # ==========================================
 
-        self.bind_navigation()
+        #self.bind_navigation()
 
         self.show_page(
             "dashboard",
@@ -195,26 +195,26 @@ class MainWindow(QMainWindow):
     # NAVIGATION
     # ==========================================================
 
-    def bind_navigation(self):
+    # def bind_navigation(self):
 
-        navigation = {
+    #     navigation = {
 
-            self.sidebar.dashboardButton: "dashboard",
+    #         self.sidebar.dashboardButton: "dashboard",
 
-            # self.sidebar.cameraButton: "camera",
-            # self.sidebar.sensorButton: "sensor",
-            # self.sidebar.controlButton: "control",
-            # self.sidebar.settingButton: "settings",
+    #         # self.sidebar.cameraButton: "camera",
+    #         # self.sidebar.sensorButton: "sensor",
+    #         # self.sidebar.controlButton: "control",
+    #         # self.sidebar.settingButton: "settings",
 
-        }
+    #     }
 
-        for button, page in navigation.items():
-            button.clicked.connect(
+    #     for button, page in navigation.items():
+    #         button.clicked.connect(
 
-                lambda checked=False,
-                       p=page: self.show_page(p)
+    #             lambda checked=False,
+    #                    p=page: self.show_page(p)
 
-            )
+    #         )
 
     # ==========================================================
     # RESPONSIVE

@@ -6,53 +6,236 @@ from PySide6.QtWidgets import QLabel
 
 from widgets.card import Card
 
+from pathlib import Path
+
 
 class CameraPreview(Card):
 
     def __init__(self, camera_index=0):
         super().__init__()
 
+        self.layout.setAlignment(Qt.AlignTop)
+
         self.camera_index = camera_index
 
         self.cap = None
 
-        self.title = QLabel("Live Camera")
-        self.title.setObjectName("CardTitle")
+        # ======================================================
+        # RECORDING
+        # ======================================================
+
+        self.videoWriter = None
+        self.isRecording = False
+
+        # ======================================================
+        # CAMERA TITLE
+        # ======================================================
+
+        self.title = QLabel(
+            "Live Camera"
+        )
+
+        self.title.setObjectName(
+            "CardTitle"
+        )
+
+        # ======================================================
+        # CAMERA IMAGE
+        # ======================================================
 
         self.imageLabel = QLabel()
-        self.imageLabel.setAlignment(Qt.AlignCenter)
-        self.imageLabel.setMinimumHeight(300)
 
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.imageLabel)
+        self.imageLabel.setAlignment(
+            Qt.AlignCenter
+        )
+
+        self.imageLabel.setMinimumHeight(
+            500
+        )
+
+        self.layout.addWidget(
+            self.title
+        )
+
+        self.layout.addWidget(
+            self.imageLabel
+        )
+
+        # ======================================================
+        # TIMER
+        # ======================================================
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_frame)
+
+        self.timer.timeout.connect(
+            self.update_frame
+        )
 
         self.start_camera()
 
+    # ==========================================================
+    # START CAMERA
+    # ==========================================================
+
     def start_camera(self):
 
-        self.cap = cv2.VideoCapture(self.camera_index)
+        self.cap = cv2.VideoCapture(
+            self.camera_index
+        )
 
         if not self.cap.isOpened():
 
-            self.imageLabel.setText("Camera Not Found")
+            self.imageLabel.setText(
+                "Camera Not Found"
+            )
+
             return
 
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.cap.set(cv2.CAP_PROP_FPS, 30)
+        self.cap.set(
+            cv2.CAP_PROP_FRAME_WIDTH,
+            1280
+        )
 
-        self.timer.start(30)
+        self.cap.set(
+            cv2.CAP_PROP_FRAME_HEIGHT,
+            720
+        )
+
+        self.cap.set(
+            cv2.CAP_PROP_FPS,
+            30
+        )
+
+        self.timer.start(
+            30
+        )
+
+    # ==========================================================
+    # STOP CAMERA
+    # ==========================================================
 
     def stop_camera(self):
 
         self.timer.stop()
 
+        # Stop recording terlebih dahulu
+        self.stop_recording()
+
         if self.cap is not None:
 
             self.cap.release()
+
+            self.cap = None
+
+    # ==========================================================
+    # START RECORDING
+    # ==========================================================
+
+    def start_recording(
+        self,
+        record_path
+    ):
+
+        if self.cap is None:
+            return
+
+        if self.videoWriter is not None:
+            return
+
+        # ======================================================
+        # VIDEO PATH
+        # ======================================================
+
+        record_path = Path(record_path)
+
+        videoPath = (
+            record_path /
+            f"{record_path.name}.mp4"
+        )
+
+        # ======================================================
+        # CAMERA INFORMATION
+        # ======================================================
+
+        width = int(
+            self.cap.get(
+                cv2.CAP_PROP_FRAME_WIDTH
+            )
+        )
+
+        height = int(
+            self.cap.get(
+                cv2.CAP_PROP_FRAME_HEIGHT
+            )
+        )
+
+        fps = self.cap.get(
+            cv2.CAP_PROP_FPS
+        )
+
+        if fps <= 0:
+            fps = 30.0
+
+        # ======================================================
+        # VIDEO WRITER
+        # ======================================================
+
+        fourcc = cv2.VideoWriter_fourcc(
+            *"mp4v"
+        )
+
+        self.videoWriter = cv2.VideoWriter(
+            videoPath,
+            fourcc,
+            fps,
+            (
+                width,
+                height
+            )
+        )
+
+        if not self.videoWriter.isOpened():
+
+            self.videoWriter = None
+
+            print(
+                "Failed to create video:"
+            )
+
+            print(
+                videoPath
+            )
+
+            return
+
+        self.isRecording = True
+
+        print(
+            f"Recording started: {videoPath}"
+        )
+
+    # ==========================================================
+    # STOP RECORDING
+    # ==========================================================
+
+    def stop_recording(self):
+
+        if self.videoWriter is None:
+            return
+
+        self.videoWriter.release()
+
+        self.videoWriter = None
+
+        self.isRecording = False
+
+        print(
+            "Recording stopped"
+        )
+
+    # ==========================================================
+    # UPDATE FRAME
+    # ==========================================================
 
     def update_frame(self):
 
@@ -64,7 +247,24 @@ class CameraPreview(Card):
         if not ret:
             return
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # ======================================================
+        # SAVE FRAME TO VIDEO
+        # ======================================================
+
+        if self.videoWriter is not None:
+
+            self.videoWriter.write(
+                frame
+            )
+
+        # ======================================================
+        # DISPLAY FRAME
+        # ======================================================
+
+        frame = cv2.cvtColor(
+            frame,
+            cv2.COLOR_BGR2RGB
+        )
 
         h, w, ch = frame.shape
 
@@ -76,7 +276,9 @@ class CameraPreview(Card):
             QImage.Format_RGB888,
         )
 
-        pixmap = QPixmap.fromImage(image)
+        pixmap = QPixmap.fromImage(
+            image
+        )
 
         pixmap = pixmap.scaled(
             self.imageLabel.size(),
@@ -84,10 +286,23 @@ class CameraPreview(Card):
             Qt.SmoothTransformation,
         )
 
-        self.imageLabel.setPixmap(pixmap)
+        self.imageLabel.setPixmap(
+            pixmap
+        )
 
-    def closeEvent(self, event):
+    # ==========================================================
+    # CLOSE
+    # ==========================================================
+
+    def closeEvent(
+        self,
+        event
+    ):
+
+        self.stop_recording()
 
         self.stop_camera()
 
-        super().closeEvent(event)
+        super().closeEvent(
+            event
+        )
