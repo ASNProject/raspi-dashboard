@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from core.config_manager import Config
+from core.dummy_data import DummyData
 from PySide6.QtWidgets import QSizePolicy
 
 from widgets.card import Card
@@ -128,13 +129,6 @@ class Dashboard(QWidget):
             default=[]
         )
 
-        if not any(card["key"] == "fps" for card in cards):
-            cards.append({
-                "key": "fps",
-                "title": "Camera FPS",
-                "unit": "FPS",
-            })
-
         self.create_sensor_cards(cards)
 
         contentLayout.addLayout(self.cardGrid)
@@ -156,6 +150,8 @@ class Dashboard(QWidget):
             controls
         )
 
+        print("Controls", controls)
+
         contentLayout.addLayout(self.controlGrid)
 
         # ======================================================
@@ -173,6 +169,22 @@ class Dashboard(QWidget):
         )
 
         mainLayout.addWidget(self.toolbar, 0)
+
+        # ======================================================
+        # DUMMY
+        # ======================================================
+
+        self.dummy = DummyData()
+
+        self.dummy.sensorChanged.connect(
+            self.update_sensor
+        )
+
+        self.dummy.fpsChanged.connect(
+            self.update_fps
+        )
+
+        self.dummy.start()
 
     # ==========================================================
     # CREATE CARD
@@ -204,6 +216,43 @@ class Dashboard(QWidget):
             if col >= columns:
                 col = 0
                 row += 1
+
+    # ==========================================================
+    # UPDATE SENSOR
+    # ==========================================================
+
+    def update_sensor(
+            self,
+            temp,
+            hum,
+            gas,
+    ):
+
+        values = {
+            "temperature": temp,
+            "humidity": hum,
+            "gas": gas,
+        }
+
+        self.sensorChart.update_data(values)
+
+        self.update_card(
+            "temperature",
+            f"{temp:.1f}",
+            "Normal" if temp < 30 else "Warning",
+        )
+
+        self.update_card(
+            "humidity",
+            f"{hum:.1f}",
+            "Optimal" if hum < 70 else "High",
+        )
+
+        self.update_card(
+            "gas",
+            f"{gas:.0f}",
+            "Safe" if gas < 250 else "Danger",
+        )
 
     # ==========================================================
     # UPDATE FPS

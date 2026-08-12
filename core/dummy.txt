@@ -1,0 +1,263 @@
+{
+  "cards": [
+    {
+      "key": "temperature",
+      "title": "Temperature",
+      "unit": "°C",
+      "color": "#ff6b6b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "humidity",
+      "title": "Humidity",
+      "unit": "%",
+      "color": "#4dabf7",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "ph",
+      "title": "pH",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 14
+    },
+    {
+      "key": "conductivity",
+      "title": "Conductivity",
+      "unit": "us/cm",
+      "color": "#fcc419",
+      "min": 0,
+      "max": 5000
+    },
+    {
+      "key": "nitrogen",
+      "title": "Nitrogen",
+      "unit": "mg",
+      "color": "#845ef7",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "key": "phosphorus",
+      "title": "Phosphorus",
+      "unit": "mg",
+      "color": "#20c997",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "key": "potassium",
+      "title": "Potassium",
+      "unit": "mg",
+      "color": "#ff922b",
+      "min": 0,
+      "max": 1000
+    },
+    {
+      "key": "latitude",
+      "title": "Latitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -90,
+      "max": 90
+    },
+    {
+      "key": "longitude",
+      "title": "Longitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "satelite",
+      "title": "Satelite",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 30
+    },
+    {
+      "key": "battery",
+      "title": "Battery",
+      "unit": "Volt",
+      "color": "#ffd43b",
+      "min": 0,
+      "max": 15
+    },
+
+    {
+      "key": "phwater",
+      "title": "Water pH",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 14
+    },
+    {
+      "key": "temperatureph",
+      "title": "Temperature pH",
+      "unit": "°C",
+      "color": "#ff6b6b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "latitudeph",
+      "title": "Latitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -90,
+      "max": 90
+    },
+    {
+      "key": "longitudeph",
+      "title": "Longitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "sateliteph",
+      "title": "Satelite",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 30
+    },
+    {
+      "key": "batteryph",
+      "title": "Battery",
+      "unit": "Volt",
+      "color": "#ffd43b",
+      "min": 0,
+      "max": 15
+    },
+
+    {
+      "key": "ec",
+      "title": "EC",
+      "unit": "us/cm",
+      "color": "#fcc419",
+      "min": 0,
+      "max": 5000
+    },
+    {
+      "key": "temperatureec",
+      "title": "Temperature EC",
+      "unit": "°C",
+      "color": "#ff6b6b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "salinity",
+      "title": "Salinity",
+      "unit": "ppm",
+      "color": "#20c997",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "key": "tds",
+      "title": "TDS",
+      "unit": "ppm",
+      "color": "#845ef7",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "key": "latitudeec",
+      "title": "Latitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -90,
+      "max": 90
+    },
+    {
+      "key": "longitudeec",
+      "title": "Longitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "sateliteec",
+      "title": "Satelite",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 30
+    },
+    {
+      "key": "batteryec",
+      "title": "Battery",
+      "unit": "Volt",
+      "color": "#ffd43b",
+      "min": 0,
+      "max": 15
+    },
+
+    {
+      "key": "dosaturation",
+      "title": "DO Saturation",
+      "unit": "%",
+      "color": "#4dabf7",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "do",
+      "title": "DO",
+      "unit": "mg/L",
+      "color": "#339af0",
+      "min": 0,
+      "max": 20
+    },
+    {
+      "key": "temperaturedo",
+      "title": "Temperature DO",
+      "unit": "°C",
+      "color": "#ff6b6b",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "latitudedo",
+      "title": "Latitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -90,
+      "max": 90
+    },
+    {
+      "key": "longitudedo",
+      "title": "Longitude",
+      "unit": "",
+      "color": "#339af0",
+      "min": -180,
+      "max": 180
+    },
+    {
+      "key": "satelitedo",
+      "title": "Satelite",
+      "unit": "",
+      "color": "#51cf66",
+      "min": 0,
+      "max": 30
+    },
+    {
+      "key": "batterydo",
+      "title": "Battery",
+      "unit": "Volt",
+      "color": "#ffd43b",
+      "min": 0,
+      "max": 15
+    }
+  ]
+}

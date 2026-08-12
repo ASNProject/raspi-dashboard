@@ -19,6 +19,9 @@ from screens.sidebar.sensor import SensorPage
 from screens.sidebar.control import ControlPage
 from screens.sidebar.settings import SettingsPage
 
+import logging
+
+
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -186,7 +189,6 @@ class MainWindow(QMainWindow):
         page = self.pageMap.get(name)
 
         if page:
-
             self.pages.setCurrentWidget(page)
 
     # ==========================================================
@@ -207,11 +209,10 @@ class MainWindow(QMainWindow):
         }
 
         for button, page in navigation.items():
-
             button.clicked.connect(
 
                 lambda checked=False,
-                p=page: self.show_page(p)
+                       p=page: self.show_page(p)
 
             )
 
@@ -243,29 +244,30 @@ class MainWindow(QMainWindow):
 
     def packet_received(self, data):
 
+        logging.info(data)
         print(data)
 
         dashboard = self.pageMap["dashboard"]
 
         dashboard.process_packet(data)
 
-
     def stop_serial(self):
 
         self.serial.disconnect()
 
         if self.thread.isRunning():
-
             self.thread.quit()
 
             self.thread.wait()
 
     def start_serial(self, port, baudrate):
 
+        logging.info("START SERIAL")
         print("START SERIAL")
 
         self.serial.open(port, baudrate)
 
+        logging.info("RUNNING:", self.serial.running)
         print("RUNNING:", self.serial.running)
 
         if self.serial.running and not self.thread.isRunning():
@@ -274,13 +276,14 @@ class MainWindow(QMainWindow):
     def showEvent(self, event):
 
         super().showEvent(event)
+        logging.info("SHOW EVENT")
         print("SHOW EVENT")
 
         serialConfig = Config.get("config")
+        logging.info("Serial Config:", serialConfig)
         print("Serial Config:", serialConfig)
 
         if serialConfig.get("autoConnect", True):
-
             QTimer.singleShot(
                 3000,
                 lambda: self.start_serial(

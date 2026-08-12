@@ -1,7 +1,8 @@
-from PySide6.QtCore import QObject, Signal, QThread, QMetaObject, Qt
+from PySide6.QtCore import QObject, Signal
 import serial
 import json
 import time
+import logging
 
 
 class SerialManager(QObject):
@@ -20,13 +21,33 @@ class SerialManager(QObject):
 
     def open(self, port, baudrate):
 
-        print("OPEN:", port, baudrate)
+        self.running = False
+
+        self.port = None
+        self.baudrate = None
+
+        self._connected = False
+
+    def open(self, port, baudrate):
+
+        self.port = port
+        self.baudrate = baudrate
+
+        self.running = True
+
+    def _connect(self):
+
+        if self.ser and self.ser.is_open:
+            return True
 
         try:
 
+            logging.info(f"Connecting {self.port} ...")
+            print(f"Connecting {self.port} ...")
+
             self.ser = serial.Serial(
-                port=port,
-                baudrate=baudrate,
+                port=self.port,
+                baudrate=self.baudrate,
                 timeout=0.1,
             )
 
@@ -35,90 +56,107 @@ class SerialManager(QObject):
             self.ser.reset_input_buffer()
             self.ser.reset_output_buffer()
 
-            print("OPEN BERHASIL")
+            time.sleep(2)
 
-            self.running = True
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
+
+            # ESP32 biasanya reset ketika serial dibuka
+            time.sleep(2)
+
+            self._connected = True
+
+            logging.info("Serial Connected")
+            print("Serial Connected")
 
             self.connected.emit()
 
+            return True
+
         except Exception as e:
 
-            self.running = False
+            if self._connected:
+                self._connected = False
+                self.disconnected.emit()
+
+            print("CONNECT ERROR :", e)
+
+            self.error.emit(str(e))
 
             self.ser = None
 
-            self.error.emit(str(e))
+            return False
 
     def start(self):
 
         while self.running:
 
-            # Menunggu sampai connect()
-            if not self.running:
-
-                time.sleep(0.2)
-
-                continue
-
-            # Serial belum dibuka
+            # Belum connect
             if self.ser is None:
 
-                time.sleep(0.2)
+                if not self._connect():
 
-                continue
+                    time.sleep(2)
+
+                    continue
 
             try:
 
-                # Tidak ada data
                 if self.ser.in_waiting == 0:
 
                     time.sleep(0.01)
 
                     continue
 
-                # Baca satu baris JSON
                 line = self.ser.readline().decode(
                     "utf-8",
                     errors="ignore"
                 ).strip()
 
-                if line == "":
+                if not line:
                     continue
 
-                # Parse JSON
-                data = json.loads(line)
+                try:
 
-                # Kirim ke Dashboard
-                self.packetReceived.emit(data)
+                    packet = json.loads(line)
 
-            except json.JSONDecodeError:
+                    self.packetReceived.emit(packet)
 
-                print("Invalid JSON :", line)
+                except json.JSONDecodeError:
+
+                    logging.info("Invalid JSON : %s", line)
+                    print("Invalid JSON :", line)
 
             except serial.SerialException as e:
 
+                logging.info("Serial Error :", e)
                 print("Serial Error :", e)
 
-                self.running = False
+                self.error.emit(str(e))
 
-                if self.ser:
-
-                    try:
-                        self.ser.close()
-                    except:
-                        pass
+                try:
+                    self.ser.close()
+                except:
+                    pass
 
                 self.ser = None
 
-                self.disconnected.emit()
+                if self._connected:
+
+                    self._connected = False
+
+                    self.disconnected.emit()
+
+                time.sleep(2)
 
             except Exception as e:
 
+                logging.info("Error :", e)
                 print("Error :", e)
 
                 self.error.emit(str(e))
 
-                time.sleep(0.1)
+                time.sleep(1)
 
     def disconnect(self):
 
@@ -133,12 +171,18 @@ class SerialManager(QObject):
 
         self.ser = None
 
-        self.disconnected.emit()
+        if self._connected:
+
+            self._connected = False
+
+            self.disconnected.emit()
 
     def send(self, packet: dict):
 
         if not self.ser or not self.ser.is_open:
+
             self.error.emit("Serial belum terhubung")
+
             return False
 
         try:
@@ -149,12 +193,23 @@ class SerialManager(QObject):
 
             self.ser.flush()
 
-            print("SEND :", message.strip())
-
             return True
 
         except Exception as e:
 
             self.error.emit(str(e))
+
+            try:
+                self.ser.close()
+            except:
+                pass
+
+            self.ser = None
+
+            if self._connected:
+
+                self._connected = False
+
+                self.disconnected.emit()
 
             return False
