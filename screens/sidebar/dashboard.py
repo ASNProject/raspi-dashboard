@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 from datetime import datetime
 
@@ -19,9 +20,72 @@ from widgets.sensor_card import SensorCard
 from widgets.dashboard_toolbar import DashboardToolbar
 
 
-class Dashboard(QWidget):
+def get_daily_csv_path(mode):
+    basePath = Config.get(
+        "config",
+        "recordingPath",
+        default="/records"
+    )
 
-    RECORD_DURATION = 3 * 60  # 3 menit
+    basePath = Path(basePath)
+
+    today = datetime.now().strftime(
+        "%Y-%m-%d"
+    )
+
+    dailyPath = (
+            basePath /
+            today /
+            mode
+    )
+
+    dailyPath.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    return (
+            dailyPath /
+            "image_sensor.csv"
+    )
+
+
+def get_next_image_number(recordPath):
+
+    existingImages = list(
+        recordPath.glob("IMG_*.jpg")
+    )
+
+    if not existingImages:
+        return 1
+
+    numbers = []
+
+    for imagePath in existingImages:
+
+        try:
+
+            number = int(
+                imagePath.stem.replace(
+                    "IMG_",
+                    ""
+                )
+            )
+
+            numbers.append(number)
+
+        except ValueError:
+            continue
+
+    if not numbers:
+        return 1
+
+    return max(numbers) + 1
+
+
+class Dashboard(QWidget):
+    CAPTURE_DURATION = 3 * 60  # 3 menit
+    CAPTURE_INTERVAL = 1000
 
     def __init__(self, serial):
         super().__init__()
@@ -40,22 +104,25 @@ class Dashboard(QWidget):
         self.cameraPreview = None
         self.toolbar = None
 
-        self.isRecording = False
-        self.isAutoRecording = False
+        self.isCapturing = False
+        self.isAutoCapture = False
 
         self.currentRecordId = None
         self.currentRecordPath = None
 
-        self.recordElapsed = 0
+        self.captureElapsed = 0
+        self.imageIndex = 0
 
-        # ======================================================
-        # TIMER
-        # ======================================================
+        self.latestSensorData = {}
 
-        self.recordTimer = QTimer(self)
-        self.recordTimer.setInterval(1000)
-        self.recordTimer.timeout.connect(
-            self.update_record_timer
+        self.captureTimer = QTimer(self)
+
+        self.captureTimer.setInterval(
+            self.CAPTURE_INTERVAL
+        )
+
+        self.captureTimer.timeout.connect(
+            self.capture_auto_image
         )
 
         # ======================================================
@@ -239,17 +306,17 @@ class Dashboard(QWidget):
 
         # Manual recording
         self.toolbar.startManualButton.clicked.connect(
-            self.start_manual_record
+            self.start_manual_capture
         )
 
         # Auto recording 3 menit
         self.toolbar.startAutoButton.clicked.connect(
-            self.start_auto_record
+            self.start_auto_capture
         )
 
         # Stop recording
         self.toolbar.stopRecordButton.clicked.connect(
-            self.stop_record
+            self.stop_capture
         )
 
         mainLayout.addWidget(
@@ -276,7 +343,6 @@ class Dashboard(QWidget):
         columns = 2
 
         for index, sensor in enumerate(sensors):
-
             row = index // columns
             col = index % columns
 
@@ -346,6 +412,10 @@ class Dashboard(QWidget):
 
     def update_sensor(self, data):
 
+        self.latestSensorData.update(
+            data
+        )
+
         for key, value in data.items():
 
             if key not in self.sensorCards:
@@ -361,9 +431,9 @@ class Dashboard(QWidget):
     # ==========================================================
 
     def update_card(
-        self,
-        key,
-        value
+            self,
+            key,
+            value
     ):
 
         if key not in self.sensorCards:
@@ -379,287 +449,76 @@ class Dashboard(QWidget):
         )
 
     # ==========================================================
-    # START MANUAL
-    # ==========================================================
-
-    def start_manual_record(self):
-
-        if self.isRecording:
-            return
-
-        self.start_recording(
-            auto=False
-        )
-
-    # ==========================================================
-    # START AUTO
-    # ==========================================================
-
-    def start_auto_record(self):
-
-        if self.isRecording:
-            return
-
-        self.start_recording(
-            auto=True
-        )
-
-    # ==========================================================
-    # START RECORDING
-    # ==========================================================
-
-    def start_recording(
-        self,
-        auto=False
-    ):
-
-        if self.isRecording:
-            return
-
-        # ------------------------------------------------------
-        # CREATE RECORD ID
-        # ------------------------------------------------------
-
-        record_id = self.generate_record_id()
-
-        # ------------------------------------------------------
-        # SSD PATH
-        # ------------------------------------------------------
-
-        basePath = Config.get(
-            "config",
-            "recordingPath",
-            default="/records"
-        )
-
-        basePath = Path(
-            basePath
-        )
-
-        recordPath = (
-            basePath /
-            record_id
-        )
-
-        recordPath.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-
-        # ------------------------------------------------------
-        # STATE
-        # ------------------------------------------------------
-
-        self.isRecording = True
-        self.isAutoRecording = auto
-
-        self.currentRecordId = record_id
-        self.currentRecordPath = recordPath
-
-        self.recordElapsed = 0
-
-        # ------------------------------------------------------
-        # CAMERA
-        # ------------------------------------------------------
-
-        self.cameraPreview.start_recording(
-            str(recordPath)
-        )
-
-        # ------------------------------------------------------
-        # SERIAL
-        # ------------------------------------------------------
-
-        self.serial.send(
-            {
-                "type": "record",
-                "command": "start",
-                "mode": "auto"
-                if auto
-                else "manual",
-                "record_id": record_id,
-            }
-        )
-
-        # ------------------------------------------------------
-        # TIMER
-        # ------------------------------------------------------
-
-        self.recordTimer.start()
-
-        # ------------------------------------------------------
-        # STATUS
-        # ------------------------------------------------------
-
-        mode = (
-            "AUTO - 3 MENIT"
-            if auto
-            else "MANUAL"
-        )
-
-        self.set_recording_status(
-            "● RECORDING",
-            f"{mode} | {record_id}"
-        )
-
-        self.toolbar.recordInfoLabel.setText(
-            f"Folder: {recordPath}"
-        )
-
-    # ==========================================================
-    # STOP RECORDING
-    # ==========================================================
-
-    def stop_record(self):
-
-        if not self.isRecording:
-            return
-
-        # ------------------------------------------------------
-        # STOP TIMER
-        # ------------------------------------------------------
-
-        self.recordTimer.stop()
-
-        # ------------------------------------------------------
-        # STOP CAMERA
-        # ------------------------------------------------------
-
-        self.cameraPreview.stop_recording()
-
-        # ------------------------------------------------------
-        # SERIAL
-        # ------------------------------------------------------
-
-        self.serial.send(
-            {
-                "type": "record",
-                "command": "stop",
-                "record_id": self.currentRecordId,
-            }
-        )
-
-        # ------------------------------------------------------
-        # STATUS
-        # ------------------------------------------------------
-
-        recordPath = self.currentRecordPath
-
-        self.isRecording = False
-        self.isAutoRecording = False
-
-        self.set_recording_status(
-            "RECORDING SELESAI",
-            self.currentRecordId
-        )
-
-        self.toolbar.recordInfoLabel.setText(
-            f"Tersimpan di: {recordPath}"
-        )
-
-        self.currentRecordId = None
-        self.currentRecordPath = None
-
-    # ==========================================================
-    # RECORD TIMER
-    # ==========================================================
-
-    def update_record_timer(self):
-
-        if not self.isRecording:
-            return
-
-        self.recordElapsed += 1
-
-        minutes = self.recordElapsed // 60
-        seconds = self.recordElapsed % 60
-
-        elapsed = (
-            f"{minutes:02d}:{seconds:02d}"
-        )
-
-        # ------------------------------------------------------
-        # AUTO STOP 3 MENIT
-        # ------------------------------------------------------
-
-        if (
-            self.isAutoRecording
-            and self.recordElapsed >= self.RECORD_DURATION
-        ):
-
-            self.stop_record()
-
-            return
-
-        mode = (
-            "AUTO"
-            if self.isAutoRecording
-            else "MANUAL"
-        )
-
-        self.toolbar.statusLabel.setText(
-            f"● RECORDING | {mode} | {elapsed}"
-        )
-
-    # ==========================================================
     # RECORD ID
     # ==========================================================
 
-    def generate_record_id(self):
+    def save_capture_data(
+            self,
+            mode,
+            image_name,
+            image_path
+    ):
 
-        basePath = Config.get(
-            "config",
-            "recordingPath",
-            default="/records"
-        )
-        basePath = Path(
-            basePath
-        )
+        csvPath = get_daily_csv_path(mode)
 
-        basePath.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        fileExists = csvPath.exists()
 
-        # ======================================================
-        # DATE + TIME
-        # ======================================================
-
-        timestamp = datetime.now().strftime(
-            "%Y-%m-%d_%H-%M-%S"
+        sensorKeys = list(
+            self.latestSensorData.keys()
         )
 
-        # ======================================================
-        # INDEX
-        # ======================================================
+        fieldnames = [
+                         "image_name",
+                         "image_path",
+                         "timestamp",
+                     ] + sensorKeys
 
-        index = 1
+        with open(
+                csvPath,
+                "a",
+                newline="",
+                encoding="utf-8"
+        ) as csvFile:
 
-        while True:
-
-            record_id = (
-                f"REC-{index:04d}_"
-                f"{timestamp}"
+            writer = csv.DictWriter(
+                csvFile,
+                fieldnames=fieldnames
             )
 
-            recordPath = (
-                basePath /
-                record_id
-            )
+            if not fileExists:
+                writer.writeheader()
 
-            if not recordPath.exists():
-                return record_id
+            row = {
+                "image_name":
+                    image_name,
 
-            index += 1
+                "image_path":
+                    str(image_path),
+
+                "timestamp":
+                    datetime.now().strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+            }
+
+            for key in sensorKeys:
+                row[key] = (
+                    self.latestSensorData.get(
+                        key,
+                        ""
+                    )
+                )
+
+            writer.writerow(row)
 
     # ==========================================================
     # STATUS
     # ==========================================================
 
     def set_recording_status(
-        self,
-        status,
-        message=""
+            self,
+            status,
+            message=""
     ):
 
         self.toolbar.statusLabel.setText(
@@ -669,3 +528,231 @@ class Dashboard(QWidget):
         self.toolbar.recordInfoLabel.setText(
             message
         )
+
+    def start_manual_capture(self):
+
+        if self.isCapturing:
+            return
+
+        basePath = Config.get(
+            "config",
+            "recordingPath",
+            default="/records"
+        )
+
+        today = datetime.now().strftime(
+            "%Y-%m-%d"
+        )
+
+        recordPath = (
+                Path(basePath) /
+                today /
+                "manual"
+        )
+
+        recordPath.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        self.currentRecordPath = recordPath
+
+        # ======================================================
+        # GET NEXT IMAGE NUMBER
+        # ======================================================
+
+        imageNumber = get_next_image_number(
+            recordPath
+        )
+
+        imageName = (
+            f"IMG_{imageNumber:04d}.jpg"
+        )
+
+        imagePath = (
+                recordPath /
+                imageName
+        )
+
+        # ======================================================
+        # CAPTURE
+        # ======================================================
+
+        success = self.cameraPreview.capture_image(
+            imagePath
+        )
+
+        if not success:
+            self.set_recording_status(
+                "ERROR",
+                "Gagal mengambil gambar"
+            )
+
+            self.currentRecordPath = None
+
+            return
+
+        # ======================================================
+        # SAVE SENSOR DATA
+        # ======================================================
+
+        self.save_capture_data(
+            "manual",
+            imageName,
+            imagePath
+        )
+
+        self.set_recording_status(
+            "CAPTURE BERHASIL",
+            str(imagePath)
+        )
+
+        print(
+            f"Manual capture: {imagePath}"
+        )
+
+        self.currentRecordPath = None
+
+    def start_auto_capture(self):
+
+        if self.isCapturing:
+            return
+
+        basePath = Config.get(
+            "config",
+            "recordingPath",
+            default="/records"
+        )
+
+        today = datetime.now().strftime(
+            "%Y-%m-%d"
+        )
+
+        recordPath = (
+                Path(basePath) /
+                today /
+                "auto"
+        )
+
+        recordPath.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        self.isCapturing = True
+        self.isAutoCapture = True
+
+        self.currentRecordPath = recordPath
+
+        self.captureElapsed = 0
+        self.imageIndex = (
+                get_next_image_number(
+                    recordPath
+                ) - 1
+        )
+
+        self.captureTimer.start()
+
+        self.set_recording_status(
+            "● AUTO CAPTURE",
+            f"3 menit | {recordPath}"
+        )
+
+    def capture_auto_image(self):
+
+        if not self.isCapturing:
+            return
+
+        imageNumber = self.imageIndex + 1
+
+        imageName = (
+            f"IMG_{imageNumber:04d}.jpg"
+        )
+
+        imagePath = (
+                self.currentRecordPath /
+                imageName
+        )
+
+        success = self.cameraPreview.capture_image(
+            imagePath
+        )
+
+        if success:
+            self.imageIndex += 1
+
+            self.save_capture_data(
+                "auto",
+                imageName,
+                imagePath
+            )
+            print(
+                f"Auto capture: {imagePath}"
+            )
+
+        self.captureElapsed += 1
+
+        minutes = self.captureElapsed // 60
+        seconds = self.captureElapsed % 60
+
+        elapsed = (
+            f"{minutes:02d}:{seconds:02d}"
+        )
+
+        self.toolbar.statusLabel.setText(
+            f"● AUTO CAPTURE | {elapsed}"
+        )
+
+        if self.captureElapsed >= self.CAPTURE_DURATION:
+            self.stop_auto_capture()
+
+    def stop_auto_capture(self):
+
+        self.captureTimer.stop()
+
+        recordPath = self.currentRecordPath
+
+        totalImages = self.imageIndex
+
+        self.isCapturing = False
+        self.isAutoCapture = False
+
+        self.set_recording_status(
+            "CAPTURE SELESAI",
+            f"{totalImages} gambar tersimpan"
+        )
+
+        self.toolbar.recordInfoLabel.setText(
+            f"Tersimpan di: {recordPath}"
+        )
+
+        self.currentRecordId = None
+        self.currentRecordPath = None
+
+        self.captureElapsed = 0
+        self.imageIndex = 0
+
+    def stop_capture(self):
+
+        if not self.isCapturing:
+            return
+
+        self.captureTimer.stop()
+
+        recordPath = self.currentRecordPath
+        totalImages = self.imageIndex
+
+        self.isCapturing = False
+        self.isAutoCapture = False
+
+        self.set_recording_status(
+            "CAPTURE DIHENTIKAN",
+            f"{totalImages} gambar tersimpan"
+        )
+
+        self.toolbar.recordInfoLabel.setText(
+            f"Tersimpan di: {recordPath}"
+        )
+
+        self.currentRecordId = None
+        self.currentRecordPath = None

@@ -14,18 +14,13 @@ class CameraPreview(Card):
     def __init__(self, camera_index=0):
         super().__init__()
 
-        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setAlignment(
+            Qt.AlignTop
+        )
 
         self.camera_index = camera_index
 
         self.cap = None
-
-        # ======================================================
-        # RECORDING
-        # ======================================================
-
-        self.videoWriter = None
-        self.isRecording = False
 
         # ======================================================
         # CAMERA TITLE
@@ -118,9 +113,6 @@ class CameraPreview(Card):
 
         self.timer.stop()
 
-        # Stop recording terlebih dahulu
-        self.stop_recording()
-
         if self.cap is not None:
 
             self.cap.release()
@@ -128,110 +120,43 @@ class CameraPreview(Card):
             self.cap = None
 
     # ==========================================================
-    # START RECORDING
+    # CAPTURE IMAGE
     # ==========================================================
 
-    def start_recording(
+    def capture_image(
         self,
-        record_path
+        image_path
     ):
 
         if self.cap is None:
-            return
+            return False
 
-        if self.videoWriter is not None:
-            return
+        ret, frame = self.cap.read()
 
-        # ======================================================
-        # VIDEO PATH
-        # ======================================================
+        if not ret:
+            return False
 
-        record_path = Path(record_path)
-
-        videoPath = (
-            record_path /
-            f"{record_path.name}.mp4"
+        image_path = Path(
+            image_path
         )
 
-        # ======================================================
-        # CAMERA INFORMATION
-        # ======================================================
-
-        width = int(
-            self.cap.get(
-                cv2.CAP_PROP_FRAME_WIDTH
-            )
+        image_path.parent.mkdir(
+            parents=True,
+            exist_ok=True
         )
 
-        height = int(
-            self.cap.get(
-                cv2.CAP_PROP_FRAME_HEIGHT
-            )
+        success = cv2.imwrite(
+            str(image_path),
+            frame
         )
 
-        fps = self.cap.get(
-            cv2.CAP_PROP_FPS
-        )
-
-        if fps <= 0:
-            fps = 30.0
-
-        # ======================================================
-        # VIDEO WRITER
-        # ======================================================
-
-        fourcc = cv2.VideoWriter_fourcc(
-            *"mp4v"
-        )
-
-        self.videoWriter = cv2.VideoWriter(
-            videoPath,
-            fourcc,
-            fps,
-            (
-                width,
-                height
-            )
-        )
-
-        if not self.videoWriter.isOpened():
-
-            self.videoWriter = None
+        if success:
 
             print(
-                "Failed to create video:"
+                f"Image captured: {image_path}"
             )
 
-            print(
-                videoPath
-            )
-
-            return
-
-        self.isRecording = True
-
-        print(
-            f"Recording started: {videoPath}"
-        )
-
-    # ==========================================================
-    # STOP RECORDING
-    # ==========================================================
-
-    def stop_recording(self):
-
-        if self.videoWriter is None:
-            return
-
-        self.videoWriter.release()
-
-        self.videoWriter = None
-
-        self.isRecording = False
-
-        print(
-            "Recording stopped"
-        )
+        return success
 
     # ==========================================================
     # UPDATE FRAME
@@ -246,16 +171,6 @@ class CameraPreview(Card):
 
         if not ret:
             return
-
-        # ======================================================
-        # SAVE FRAME TO VIDEO
-        # ======================================================
-
-        if self.videoWriter is not None:
-
-            self.videoWriter.write(
-                frame
-            )
 
         # ======================================================
         # DISPLAY FRAME
@@ -298,8 +213,6 @@ class CameraPreview(Card):
         self,
         event
     ):
-
-        self.stop_recording()
 
         self.stop_camera()
 
