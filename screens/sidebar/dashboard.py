@@ -2,6 +2,10 @@ import csv
 from pathlib import Path
 from datetime import datetime
 
+import time
+
+from smbus2 import SMBus
+
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -51,7 +55,6 @@ def get_daily_csv_path(mode):
 
 
 def get_next_image_number(recordPath):
-
     existingImages = list(
         recordPath.glob("IMG_*.jpg")
     )
@@ -81,6 +84,85 @@ def get_next_image_number(recordPath):
         return 1
 
     return max(numbers) + 1
+
+
+class MPU6050:
+    ADDRESS = 0x68
+
+    def __init__(self, bus_number=0, address=0x68):
+        self.bus = SMBus(bus_number)
+        self.address = address
+
+        # Wake up MPU6050
+        self.bus.write_byte_data(
+            self.address,
+            0x6B,
+            0x00
+        )
+
+        # Accelerometer = ±16g
+        self.bus.write_byte_data(
+            self.address,
+            0x1C,
+            0x18
+        )
+
+        # Gyroscope = ±2000 °/s
+        self.bus.write_byte_data(
+            self.address,
+            0x1B,
+            0x18
+        )
+
+    def read_word(self, reg):
+        high = self.bus.read_byte_data(
+            self.address,
+            reg
+        )
+
+        low = self.bus.read_byte_data(
+            self.address,
+            reg + 1
+        )
+
+        value = (high << 8) | low
+
+        if value >= 32768:
+            value -= 65536
+
+        return value
+
+    def read_sensor(self):
+        # -------------------------
+        # ACCELEROMETER
+        # ±16g = 2048 LSB/g
+        # -------------------------
+
+        ax = self.read_word(0x3B) / 2048.0
+        ay = self.read_word(0x3D) / 2048.0
+        az = self.read_word(0x3F) / 2048.0
+
+        # -------------------------
+        # GYROSCOPE
+        # ±2000 °/s = 16.4 LSB/(°/s)
+        # -------------------------
+
+        gx = self.read_word(0x43) / 16.4
+        gy = self.read_word(0x45) / 16.4
+        gz = self.read_word(0x47) / 16.4
+
+        return {
+            "acc_x": round(ax, 3),
+            "acc_y": round(ay, 3),
+            "acc_z": round(az, 3),
+
+            "gyro_x": round(gx, 2),
+            "gyro_y": round(gy, 2),
+            "gyro_z": round(gz, 2),
+        }
+
+    def close(self):
+        self.bus.close()
 
 
 class Dashboard(QWidget):
@@ -114,6 +196,37 @@ class Dashboard(QWidget):
         self.imageIndex = 0
 
         self.latestSensorData = {}
+
+        # ======================================================
+        # MPU6050
+        # ======================================================
+
+        self.mpu = None
+
+        try:
+
+            self.mpu = MPU6050(
+                bus_number=0,
+                address=0x68
+            )
+
+            print("MPU6050 berhasil terhubung")
+
+        except Exception as e:
+
+            print(f"MPU6050 ERROR: {e}")
+
+        # Timer pembacaan MPU
+        self.mpuTimer = QTimer(self)
+
+        self.mpuTimer.setInterval(100)
+
+        self.mpuTimer.timeout.connect(
+            self.read_mpu
+        )
+
+        if self.mpu is not None:
+            self.mpuTimer.start()
 
         self.captureTimer = QTimer(self)
 
@@ -756,3 +869,48 @@ class Dashboard(QWidget):
 
         self.currentRecordId = None
         self.currentRecordPath = None
+
+    def read_mpu(self):
+
+        if self.mpu is None:
+            return
+
+        try:
+
+            data = self.mpu.read_sensor()
+
+            # Masukkan data MPU ke sistem sensor
+            self.update_sensor(data)
+
+            print(
+                f"ACC "
+                f"X:{data['acc_x']:7.3f} "
+                f"Y:{data['acc_y']:7.3f} "
+                f"Z:{data['acc_z']:7.3f} | "
+                f"GYRO "
+                f"X:{data['gyro_x']:7.2f} "
+                f"Y:{data['gyro_y']:7.2f} "
+                f"Z:{data['gyro_z']:7.2f}"
+            )
+
+        except Exception as e:
+
+            print(
+                f"MPU6050 READ ERROR: {e}"
+            )
+
+    def closeEvent(self, event):
+
+        if self.mpuTimer.isActive():
+            self.mpuTimer.stop()
+
+        if self.mpu is not None:
+
+            try:
+                self.mpu.close()
+            except Exception:
+                pass
+
+            self.mpu = None
+
+        event.accept()
